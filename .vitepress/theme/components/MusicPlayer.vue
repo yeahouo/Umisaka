@@ -306,11 +306,21 @@ const isHidden = ref(true) // 移动端默认隐藏
 const isTouchingEdge = ref(false)
 const hideTimeout = ref<NodeJS.Timeout | null>(null)
 const SLIDE_OUT_POSITION = -40 // 完全隐藏的位置
-let SLIDE_IN_POSITION = window.innerWidth - 60 // 滑出后的位置
+let SLIDE_IN_POSITION = 0 // 滑出后的位置，将在客户端初始化
 
 
 // 计算播放器样式
 const playerStyle = computed(() => {
+  // SSR期间返回默认样式
+  if (typeof window === 'undefined') {
+    return {
+      top: '900px',
+      left: '20px',
+      cursor: 'grab',
+      opacity: 0 // 初始隐藏，避免布局跳动
+    }
+  }
+
   const baseStyle = {
     top: `${position.value.y}px`,
     cursor: isDragging.value ? 'grabbing' : 'grab'
@@ -1101,6 +1111,8 @@ const savePosition = (pos: { x: number; y: number }) => {
 // 从localStorage加载位置
 const loadPosition = () => {
   try {
+    if (typeof window === 'undefined') return
+
     const saved = localStorage.getItem('musicPlayerPosition')
     if (saved) {
       const pos = JSON.parse(saved)
@@ -1184,6 +1196,8 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   }
 
   const updatePosition = (newX: number, newY: number) => {
+    if (typeof window === 'undefined') return
+
     if (isMobile.value) {
       // 移动端：只能在X轴侧滑，固定Y轴位置
       const maxSlideDistance = 100 // 最大滑动距离
@@ -1210,7 +1224,7 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
     }
   }
 
-  const stopDrag = () => {
+  let stopDrag = () => {
     if (isDragging.value) {
       isDragging.value = false
       savePosition(position.value)
@@ -1405,7 +1419,9 @@ const finishProgressKeyAdjust = () => {
 
 // 检测是否为移动设备
 const checkMobile = () => {
-  isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+  if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+    isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+  }
 }
 
 // 隐藏播放器到边缘
@@ -1482,6 +1498,8 @@ onMounted(async () => {
 
   // 监听窗口大小变化，调整位置
   const handleResize = () => {
+    if (typeof window === 'undefined') return
+
     const playerWidth = isMobile.value ? 80 : 500
     const playerHeight = isMobile.value ? 280 : 60
     const maxX = window.innerWidth - playerWidth
