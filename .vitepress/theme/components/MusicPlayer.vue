@@ -74,19 +74,6 @@
           />
         </button>
 
-        <!-- 播放列表按钮 -->
-        <button
-          class="control-btn"
-          @click="togglePlaylist"
-          :title="showPlaylist ? 'Close Playlist' : 'Open Playlist'"
-        >
-          <img
-            src="/music/icons/list-music-svgrepo-com.svg"
-            alt="Playlist"
-            class="icon-svg"
-          />
-        </button>
-
         <!-- 播放模式按钮 -->
         <button
           class="control-btn"
@@ -222,9 +209,9 @@
       </div>
     </div>
 
-    <!-- Playlist -->
+    <!-- Playlist (仅桌面端) -->
     <div
-      v-if="showPlaylist"
+      v-if="showPlaylist && !isMobile"
       class="music-playlist"
       :class="{ show: showPlaylist }"
       @touchstart="handlePlaylistTouchStart"
@@ -1285,8 +1272,8 @@ const handleClickOutside = (e: MouseEvent) => {
     showVolumeControl.value = false
   }
 
-  // 处理播放列表的关闭 - 点击播放列表和播放列表按钮外部时才关闭
-  if (showPlaylist.value &&
+  // 处理播放列表的关闭 - 仅在桌面端处理，点击播放列表和播放列表按钮外部时才关闭
+  if (!isMobile.value && showPlaylist.value &&
       musicPlayer &&
       playlist &&
       playlistButton &&
