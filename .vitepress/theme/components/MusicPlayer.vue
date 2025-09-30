@@ -1475,7 +1475,7 @@ onMounted(async () => {
   box-shadow: none;
 }
 
-.dark .music-controls {
+html.dark .music-controls {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1501,7 +1501,7 @@ onMounted(async () => {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.dark .control-btn:hover {
+html.dark .control-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -1514,7 +1514,7 @@ onMounted(async () => {
   margin-left: 2px;
 }
 
-.dark .play-icon {
+html.dark .play-icon {
   border-left-color: #fff;
 }
 
@@ -1533,8 +1533,8 @@ onMounted(async () => {
   background: #333;
 }
 
-.dark .pause-icon::before,
-.dark .pause-icon::after {
+html.dark .pause-icon::before,
+html.dark .pause-icon::after {
   background: #fff;
 }
 
@@ -1555,7 +1555,7 @@ onMounted(async () => {
   filter: brightness(0);
 }
 
-.dark .icon-svg {
+html.dark .icon-svg {
   filter: brightness(1);
 }
 
@@ -1599,7 +1599,7 @@ onMounted(async () => {
   transform: scale(1) translateY(0);
 }
 
-.dark .nav-hint {
+html.dark .nav-hint {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1613,7 +1613,7 @@ onMounted(async () => {
   filter: brightness(0);
 }
 
-.dark .hint-icon {
+html.dark .hint-icon {
   filter: brightness(1);
 }
 
@@ -1623,7 +1623,7 @@ onMounted(async () => {
   color: #333;
 }
 
-.dark .hint-text {
+html.dark .hint-text {
   color: #fff;
 }
 
@@ -1673,11 +1673,11 @@ onMounted(async () => {
   transform: scale(1.1);
 }
 
-.dark .progress-slider {
+html.dark .progress-slider {
   background: #555;
 }
 
-.dark .progress-slider::-webkit-slider-thumb {
+html.dark .progress-slider::-webkit-slider-thumb {
   background: #fff;
   width: 16px;
   height: 16px;
@@ -1689,7 +1689,7 @@ onMounted(async () => {
   background: linear-gradient(to right, #333 0%, #333 var(--progress), rgba(0, 0, 0, 0.1) var(--progress), rgba(0, 0, 0, 0.1) 100%);
 }
 
-.dark .progress-slider {
+html.dark .progress-slider {
   --progress: 0%;
   background: linear-gradient(to right, #fff 0%, #fff var(--progress), rgba(255, 255, 255, 0.1) var(--progress), rgba(255, 255, 255, 0.1) 100%);
 }
@@ -1748,7 +1748,7 @@ onMounted(async () => {
   transform: scaleY(1) translateY(0);
 }
 
-.dark .volume-control-vertical {
+html.dark .volume-control-vertical {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1785,11 +1785,11 @@ onMounted(async () => {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.dark .volume-track {
+html.dark .volume-track {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.dark .volume-fill {
+html.dark .volume-fill {
   background: linear-gradient(to top, #fff, #ccc);
   box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.3);
 }
@@ -1830,7 +1830,7 @@ onMounted(async () => {
   transform: scaleY(1) translateY(0);
 }
 
-.dark .music-playlist {
+html.dark .music-playlist {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1861,7 +1861,7 @@ onMounted(async () => {
   transform: translateY(-2px);
 }
 
-.dark .playlist-item:hover {
+html.dark .playlist-item:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -1870,7 +1870,7 @@ onMounted(async () => {
   color: #007aff;
 }
 
-.dark .playlist-item.active {
+html.dark .playlist-item.active {
   background: rgba(255, 255, 255, 0.15);
   color: #0a84ff;
 }
@@ -1883,7 +1883,7 @@ onMounted(async () => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.dark .playlist-header {
+html.dark .playlist-header {
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
