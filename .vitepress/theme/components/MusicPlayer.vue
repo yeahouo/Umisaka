@@ -1552,13 +1552,11 @@ onMounted(async () => {
 }
 
 .music-player:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.8);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .music-player:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 1);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .music-player:hover {
