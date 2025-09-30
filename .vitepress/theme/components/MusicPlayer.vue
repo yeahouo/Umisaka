@@ -1,7 +1,7 @@
 <template>
   <div
     class="music-player"
-    :class="{ 'dragging': isDragging, 'mounted': isMounted, 'mobile-hidden': isMobile && isHidden }"
+    :class="{ 'dragging': isDragging, 'mounted': isMounted, 'mobile-hidden': isMobile && isHidden, 'mobile-vertical': isMobile }"
     :style="playerStyle"
     tabindex="0"
     @mousedown="startDrag"
@@ -19,70 +19,194 @@
     />
 
     <div class="music-controls" :class="{ 'hidden': !showControls }">
-      <button
-        class="control-btn"
-        @click="togglePlay"
-        :title="isPlaying ? 'Pause' : 'Play'"
-      >
-        <div :class="isPlaying ? 'pause-icon' : 'play-icon'"></div>
-      </button>
+      <!-- 移动端竖向布局 -->
+      <div v-if="isMobile" class="mobile-vertical-layout">
+        <!-- 顶部控制栏 -->
+        <div class="mobile-top-controls">
+          <button
+            class="control-btn"
+            @click="togglePlay"
+            :title="isPlaying ? 'Pause' : 'Play'"
+          >
+            <div :class="isPlaying ? 'pause-icon' : 'play-icon'"></div>
+          </button>
 
+          <button
+            class="control-btn"
+            @click="toggleVolumeControl"
+            :title="isMuted ? 'Unmute' : 'Volume Control'"
+          >
+            <img
+              :src="speakerIcon"
+              :alt="isMuted ? 'Muted' : 'Volume'"
+              class="icon-svg"
+            />
+          </button>
+        </div>
 
-      <button
-        class="control-btn"
-        @click="toggleVolumeControl"
-        :title="isMuted ? 'Unmute' : 'Volume Control'"
-      >
-        <img
-          :src="speakerIcon"
-          :alt="isMuted ? 'Muted' : 'Volume'"
-          class="icon-svg"
-        />
-      </button>
+        <!-- 中间进度条 -->
+        <div class="mobile-progress-section">
+          <div class="progress-control">
+            <input
+              type="range"
+              min="0"
+              max="99"
+              step="0.1"
+              v-model="progress"
+              @input="updateProgress"
+              @click="handleProgressClick"
+              class="progress-slider"
+              tabindex="0"
+            />
+          </div>
+        </div>
 
-      <!-- Previous/Next Buttons -->
-      <button
-        class="control-btn nav-btn"
-        @click="playPrevious"
-        :title="playMode === 'listOnce' && !hasPrevious() ? 'No Previous Track' : 'Previous Track'"
-        :disabled="playMode === 'listOnce' && !hasPrevious()"
-      >
-        <img
-          src="/music/icons/prev-svgrepo-com.svg"
-          alt="Previous Track"
-          class="icon-svg nav-icon"
-          :class="{ 'disabled': playMode === 'listOnce' && !hasPrevious() }"
-        />
-      </button>
+        <!-- 底部控制栏 -->
+        <div class="mobile-bottom-controls">
+          <button
+            class="control-btn nav-btn"
+            @click="playPrevious"
+            :title="playMode === 'listOnce' && !hasPrevious() ? 'No Previous Track' : 'Previous Track'"
+            :disabled="playMode === 'listOnce' && !hasPrevious()"
+          >
+            <img
+              src="/music/icons/prev-svgrepo-com.svg"
+              alt="Previous Track"
+              class="icon-svg nav-icon"
+              :class="{ 'disabled': playMode === 'listOnce' && !hasPrevious() }"
+            />
+          </button>
 
-      <!-- Progress Bar -->
-      <div class="progress-control">
-        <input
-          type="range"
-          min="0"
-          max="99"
-          step="0.1"
-          v-model="progress"
-          @input="updateProgress"
-          @click="handleProgressClick"
-          class="progress-slider"
-          tabindex="0"
-        />
+          <button
+            class="control-btn nav-btn"
+            @click="playNext"
+            :title="playMode === 'listOnce' && !hasNext() ? 'No Next Track' : 'Next Track'"
+            :disabled="playMode === 'listOnce' && !hasNext()"
+          >
+            <img
+              src="/music/icons/next-svgrepo-com.svg"
+              alt="Next Track"
+              class="icon-svg nav-icon"
+              :class="{ 'disabled': playMode === 'listOnce' && !hasNext() }"
+            />
+          </button>
+
+          <button
+            class="control-btn"
+            @click="togglePlaylist"
+            :title="showPlaylist ? 'Close Playlist' : 'Open Playlist'"
+          >
+            <img
+              src="/music/icons/list-music-svgrepo-com.svg"
+              alt="Playlist"
+              class="icon-svg"
+            />
+          </button>
+
+          <button
+            class="control-btn"
+            @click="togglePlayMode"
+            :title="getPlayModeTitle()"
+          >
+            <img
+              :src="playModeIcon"
+              :alt="getPlayModeTitle()"
+              class="icon-svg"
+            />
+          </button>
+        </div>
       </div>
 
-      <button
-        class="control-btn nav-btn"
-        @click="playNext"
-        :title="playMode === 'listOnce' && !hasNext() ? 'No Next Track' : 'Next Track'"
-        :disabled="playMode === 'listOnce' && !hasNext()"
-      >
-        <img
-          src="/music/icons/next-svgrepo-com.svg"
-          alt="Next Track"
-          class="icon-svg nav-icon"
-          :class="{ 'disabled': playMode === 'listOnce' && !hasNext() }"
-        />
-      </button>
+      <!-- 桌面端横向布局 -->
+      <div v-else class="desktop-horizontal-layout">
+        <button
+          class="control-btn"
+          @click="togglePlay"
+          :title="isPlaying ? 'Pause' : 'Play'"
+        >
+          <div :class="isPlaying ? 'pause-icon' : 'play-icon'"></div>
+        </button>
+
+        <button
+          class="control-btn"
+          @click="toggleVolumeControl"
+          :title="isMuted ? 'Unmute' : 'Volume Control'"
+        >
+          <img
+            :src="speakerIcon"
+            :alt="isMuted ? 'Muted' : 'Volume'"
+            class="icon-svg"
+          />
+        </button>
+
+        <!-- Previous/Next Buttons -->
+        <button
+          class="control-btn nav-btn"
+          @click="playPrevious"
+          :title="playMode === 'listOnce' && !hasPrevious() ? 'No Previous Track' : 'Previous Track'"
+          :disabled="playMode === 'listOnce' && !hasPrevious()"
+        >
+          <img
+            src="/music/icons/prev-svgrepo-com.svg"
+            alt="Previous Track"
+            class="icon-svg nav-icon"
+            :class="{ 'disabled': playMode === 'listOnce' && !hasPrevious() }"
+          />
+        </button>
+
+        <!-- Progress Bar -->
+        <div class="progress-control">
+          <input
+            type="range"
+            min="0"
+            max="99"
+            step="0.1"
+            v-model="progress"
+            @input="updateProgress"
+            @click="handleProgressClick"
+            class="progress-slider"
+            tabindex="0"
+          />
+        </div>
+
+        <button
+          class="control-btn nav-btn"
+          @click="playNext"
+          :title="playMode === 'listOnce' && !hasNext() ? 'No Next Track' : 'Next Track'"
+          :disabled="playMode === 'listOnce' && !hasNext()"
+        >
+          <img
+            src="/music/icons/next-svgrepo-com.svg"
+            alt="Next Track"
+            class="icon-svg nav-icon"
+            :class="{ 'disabled': playMode === 'listOnce' && !hasNext() }"
+          />
+        </button>
+
+        <button
+          class="control-btn"
+          @click="togglePlaylist"
+          :title="showPlaylist ? 'Close Playlist' : 'Open Playlist'"
+        >
+          <img
+            src="/music/icons/list-music-svgrepo-com.svg"
+            alt="Playlist"
+            class="icon-svg"
+          />
+        </button>
+
+        <button
+          class="control-btn"
+          @click="togglePlayMode"
+          :title="getPlayModeTitle()"
+        >
+          <img
+            :src="playModeIcon"
+            :alt="getPlayModeTitle()"
+            class="icon-svg"
+          />
+        </button>
+      </div>
 
       <!-- Hint Dialog -->
       <div
@@ -97,32 +221,7 @@
         />
         <span class="hint-text">{{ hintText }}</span>
       </div>
-
-      <button
-        class="control-btn"
-        @click="togglePlaylist"
-        :title="showPlaylist ? 'Close Playlist' : 'Open Playlist'"
-      >
-        <img
-          src="/music/icons/list-music-svgrepo-com.svg"
-          alt="Playlist"
-          class="icon-svg"
-        />
-      </button>
-
-      <button
-        class="control-btn"
-        @click="togglePlayMode"
-        :title="getPlayModeTitle()"
-      >
-        <img
-          :src="playModeIcon"
-          :alt="getPlayModeTitle()"
-          class="icon-svg"
-        />
-      </button>
-
-      </div>
+    </div>
 
     <!-- Vertical Volume Control -->
     <div
@@ -232,7 +331,7 @@ const playerStyle = computed(() => {
     // 隐藏状态：只显示边缘
     return {
       ...baseStyle,
-      left: `${-380}px`, // 只显示20px的边缘
+      left: `${-60}px`, // 只显示20px的边缘（移动端播放器宽度80px）
       transition: 'left 0.3s ease'
     }
   } else {
@@ -941,8 +1040,10 @@ const loadPosition = () => {
     if (saved) {
       const pos = JSON.parse(saved)
       // 确保位置在可视区域内
-      const maxX = window.innerWidth - 500 // 播放器宽度约500px
-      const maxY = window.innerHeight - 60 // 播放器高度约60px
+      const playerWidth = isMobile.value ? 80 : 500
+      const playerHeight = isMobile.value ? 180 : 60
+      const maxX = window.innerWidth - playerWidth
+      const maxY = window.innerHeight - playerHeight
 
       position.value = {
         x: Math.max(0, Math.min(pos.x, maxX)),
@@ -995,8 +1096,10 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
 
     animationId = requestAnimationFrame(() => {
       // 限制在窗口范围内
-      const maxX = window.innerWidth - 500
-      const maxY = window.innerHeight - 60
+      const playerWidth = isMobile.value ? 80 : 500
+      const playerHeight = isMobile.value ? 180 : 60
+      const maxX = window.innerWidth - playerWidth
+      const maxY = window.innerHeight - playerHeight
 
       position.value = {
         x: Math.max(0, Math.min(newX, maxX)),
@@ -1200,10 +1303,19 @@ onMounted(async () => {
   // 如果没有保存的位置，设置默认位置到搜索按钮附近
   const saved = localStorage.getItem('musicPlayerPosition')
   if (!saved) {
-    // 设置位置：搜索按钮的X轴（距离右边50px），创作者信息行的Y轴
-    position.value = {
-      x: window.innerWidth - 550, // 播放器宽度500px + 距离右边50px
-      y: 900 // 创作者信息行的大致Y轴位置
+    // 根据设备类型设置不同的默认位置
+    if (isMobile.value) {
+      // 移动端：设置在右下角，播放器宽度80px + 距离右边20px
+      position.value = {
+        x: window.innerWidth - 100,
+        y: window.innerHeight - 200
+      }
+    } else {
+      // 桌面端：设置位置：搜索按钮的X轴（距离右边50px），创作者信息行的Y轴
+      position.value = {
+        x: window.innerWidth - 550, // 播放器宽度500px + 距离右边50px
+        y: 900 // 创作者信息行的大致Y轴位置
+      }
     }
   }
 
@@ -1236,8 +1348,10 @@ onMounted(async () => {
 
   // 监听窗口大小变化，调整位置
   const handleResize = () => {
-    const maxX = window.innerWidth - 500
-    const maxY = window.innerHeight - 60
+    const playerWidth = isMobile.value ? 80 : 500
+    const playerHeight = isMobile.value ? 180 : 60
+    const maxX = window.innerWidth - playerWidth
+    const maxY = window.innerHeight - playerHeight
 
     position.value = {
       x: Math.max(0, Math.min(position.value.x, maxX)),
@@ -1458,21 +1572,71 @@ onMounted(async () => {
 }
 
 .music-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  padding: 8px 16px;
   border-radius: 0;
   transition: all 0.3s ease;
   cursor: grab;
-  width: 400px;
-  height: 100%;
   box-sizing: border-box;
   border: none;
   box-shadow: none;
+}
+
+/* 桌面端横向布局 */
+.desktop-horizontal-layout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  width: 400px;
+  height: 100%;
+}
+
+/* 移动端竖向布局 */
+.mobile-vertical-layout {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  width: 80px;
+  height: auto;
+  min-height: 180px;
+  gap: 12px;
+}
+
+.mobile-top-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mobile-progress-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.mobile-bottom-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  justify-items: center;
+}
+
+/* 移动端竖向模式的进度条 */
+.mobile-vertical-layout .progress-control {
+  width: 100%;
+  margin: 0;
+  transform: rotate(-90deg);
+  width: 60px;
+  height: 8px;
+}
+
+.mobile-vertical-layout .progress-slider {
+  width: 60px;
+  height: 8px;
 }
 
 html.dark .music-controls {
@@ -1905,22 +2069,39 @@ html.dark .playlist-header {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .music-player {
-    bottom: 10px;
-    right: 10px;
+  .music-player.mobile-vertical {
+    width: 80px;
+    height: auto;
+    min-height: 180px;
   }
 
-  .music-controls {
-    padding: 6px 12px;
-    width: 420px;
-  }
-
-  .volume-slider {
-    width: 50px;
+  .mobile-vertical-layout {
+    width: 80px;
+    height: auto;
+    min-height: 180px;
   }
 
   .music-playlist {
-    max-height: 250px;
+    max-height: 200px;
+    left: auto;
+    right: 0;
+    width: 200px;
+  }
+
+  /* 移动端音量控制调整 */
+  .volume-control-vertical {
+    left: auto;
+    right: 0;
+    margin-left: 0;
+    margin-right: 8px;
+  }
+
+  /* 移动端提示框调整 */
+  .nav-hint {
+    right: auto;
+    left: 100%;
+    margin-left: 8px;
+    margin-right: 0;
   }
 }
 </style>
