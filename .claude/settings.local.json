@@ -61,7 +61,8 @@
       "Bash(dir:*)",
       "Bash(git merge:*)",
       "Bash(git cherry-pick:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "additionalDirectories": [
