@@ -282,7 +282,7 @@ html.dark .VPHero.VPHomeHero .container .main .tagline::after {
 }
 
 /* 正文结尾的 CC 协议链接暗色模式下鼠标 hover 样式 */
-.dark .footer-cc-link:hover {
+html.dark .footer-cc-link:hover {
   color: var(--vp-c-text-1);
 }
 
@@ -341,17 +341,17 @@ html.dark .VPHero.VPHomeHero .container .main .tagline::after {
   暗色模式下 Discord 链接按钮样式
 */
 
-.dark .VPHero.VPHomeHero .actions a[href="https://discord.gg/XuNFDcDZGj"] {
+html.dark .VPHero.VPHomeHero .actions a[href="https://discord.gg/XuNFDcDZGj"] {
   color: white;
   background-color: #444c9e;
 }
 
-.dark .VPHero.VPHomeHero .actions a[href="https://discord.gg/XuNFDcDZGj"]:hover {
+html.dark .VPHero.VPHomeHero .actions a[href="https://discord.gg/XuNFDcDZGj"]:hover {
   color: white;
   background-color: #404eed;
 }
 
-.dark .VPHero.VPHomeHero .actions a[href="https://discord.gg/XuNFDcDZGj"]:active {
+html.dark .VPHero.VPHomeHero .actions a[href="https://discord.gg/XuNFDcDZGj"]:active {
   color: white;
   background-color: #444c9e;
 }
@@ -379,43 +379,43 @@ html.dark .VPHero.VPHomeHero .container .main .tagline::after {
   暗色模式下 GitHub 链接按钮样式
 */
 
-.dark .VPHero.VPHomeHero .actions a[href="https://github.com/nolebase/integrations"] {
+html.dark .VPHero.VPHomeHero .actions a[href="https://github.com/nolebase/integrations"] {
   color: white;
   background-color: #4b4b4b;
 }
 
-.dark .VPHero.VPHomeHero .actions a[href="https://github.com/nolebase/integrations"]:hover {
+html.dark .VPHero.VPHomeHero .actions a[href="https://github.com/nolebase/integrations"]:hover {
   color: white;
   background-color: #252525;
 }
 
-.dark .VPHero.VPHomeHero .actions a[href="https://github.com/nolebase/integrations"]:active {
+html.dark .VPHero.VPHomeHero .actions a[href="https://github.com/nolebase/integrations"]:active {
   color: white;
   background-color: #4b4b4b;
 }
 
 /* 暗色模式隐藏按钮区域 */
-.dark .VPHomeHero .actions {
+html.dark .VPHomeHero .actions {
   display: none;
 }
 
 /* 暗色模式隐藏特性卡片区域 */
-.dark .VPHomeFeatures {
+html.dark .VPHomeFeatures {
   display: none;
 }
 
 /* 暗色模式 SVG 图标和底色位置保持一致 */
-.dark .VPHomeHero .image {
+html.dark .VPHomeHero .image {
   margin: 44px -24px -48px;
 }
 
-.dark .VPHomeHero .image-container {
+html.dark .VPHomeHero .image-container {
   margin: 0 auto;
   width: 320px;
   height: 320px;
 }
 
-.dark .VPHomeHero .image-bg {
+html.dark .VPHomeHero .image-bg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -425,7 +425,7 @@ html.dark .VPHero.VPHomeHero .container .main .tagline::after {
   transform: translate(-50%, -50%);
 }
 
-.dark .VPHomeHero :deep(.image-src) {
+html.dark .VPHomeHero :deep(.image-src) {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -436,33 +436,33 @@ html.dark .VPHero.VPHomeHero .container .main .tagline::after {
 
 /* 暗色模式响应式 SVG 位置 */
 @media (min-width: 640px) {
-  .dark .VPHomeHero .image {
+  html.dark .VPHomeHero .image {
     margin: 34px -24px -48px;
   }
 
-  .dark .VPHomeHero .image-container {
+  html.dark .VPHomeHero .image-container {
     width: 392px;
     height: 392px;
   }
 
-  .dark .VPHomeHero .image-bg {
+  html.dark .VPHomeHero .image-bg {
     width: 256px;
     height: 256px;
   }
 
-  .dark .VPHomeHero :deep(.image-src) {
+  html.dark .VPHomeHero :deep(.image-src) {
     max-width: 256px;
     max-height: 256px;
   }
 }
 
 @media (min-width: 960px) {
-  .dark .VPHomeHero .image {
+  html.dark .VPHomeHero .image {
     margin: 0;
     min-height: 100%;
   }
 
-  .dark .VPHomeHero .image-container {
+  html.dark .VPHomeHero .image-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -471,28 +471,28 @@ html.dark .VPHero.VPHomeHero .container .main .tagline::after {
     transform: translate(-32px, 4px);
   }
 
-  .dark .VPHomeHero .image-bg {
+  html.dark .VPHomeHero .image-bg {
     width: 320px;
     height: 320px;
   }
 
-  .dark .VPHomeHero :deep(.image-src) {
+  html.dark .VPHomeHero :deep(.image-src) {
     max-width: 320px;
     max-height: 320px;
   }
 }
 
 /* 暗色模式下移按钮区域 */
-.dark .VPHomeHero .actions {
+html.dark .VPHomeHero .actions {
   margin-top: 240px;
 }
 
 /* 暗色模式下移特性卡片区域 */
-.dark .VPHomeFeatures {
+html.dark .VPHomeFeatures {
   margin-top: 80px;
 }
 
 /* 暗色模式贡献者标题下移 */
-.dark .vp-doc h2#meet-the-team {
+html.dark .vp-doc h2#meet-the-team {
   margin-top: 390px;
 }
