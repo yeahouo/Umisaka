@@ -181,7 +181,7 @@ import { useData } from 'vitepress'
 const audioRef = ref<HTMLAudioElement>()
 const isPlaying = ref(false)
 const isMuted = ref(false)
-const volume = ref(0) // Default volume 0% - let user decide
+const volume = ref(0.5) // Default volume 50%
 const { frontmatter } = useData()
 
 // 动画控制状态
@@ -202,8 +202,8 @@ const isVolumeDragging = ref(false) // Whether volume is being dragged
 const volumeControlRef = ref<HTMLElement>() // Volume control container reference
 
 // 播放模式状态
-type PlayMode = 'single' | 'loop' | 'listOnce' | 'random'
-const playMode = ref<PlayMode>('loop') // Default list loop play mode
+type PlayMode = 'singleLoop' | 'listLoop' | 'listOnce' | 'random'
+const playMode = ref<PlayMode>('listLoop') // Default list loop play mode
 
 // Random play related state
 const playedSongs = ref<string[]>([]) // Record of played songs
@@ -247,6 +247,19 @@ const showControls = computed(() => {
 })
 
 const togglePlay = () => {
+  // 检查单次播放模式是否已完成
+  if (playMode.value === 'listOnce' && !isPlaying.value) {
+    const currentIndex = musicList.value.findIndex(music => music.name === currentMusic.value)
+    // 如果是最后一首歌且已停止播放，重新开始播放第一首
+    if (currentIndex === musicList.value.length - 1) {
+      if (musicList.value.length > 0) {
+        playMusic(musicList.value[0])
+        showHint('Restarting playlist')
+      }
+      return
+    }
+  }
+
   if (audioRef.value) {
     if (isPlaying.value) {
       audioRef.value.pause()
@@ -432,56 +445,47 @@ const togglePlaylist = () => {
 
 // 播放模式切换
 const togglePlayMode = () => {
-  const modes: PlayMode[] = ['single', 'loop', 'listOnce', 'random']
+  const modes: PlayMode[] = ['singleLoop', 'listLoop', 'listOnce', 'random']
   const currentIndex = modes.indexOf(playMode.value)
   const nextIndex = (currentIndex + 1) % modes.length
   const newMode = modes[nextIndex]
   playMode.value = newMode
-
-  console.log('Play mode changed to:', newMode)
-
-  // 如果切换到随机模式，初始化随机播放列表
-  if (newMode === 'random') {
-    initRandomPlayList()
-  }
 }
 
 // 获取播放模式图标
 const playModeIcon = computed(() => {
   switch (playMode.value) {
-    case 'single':
+    case 'singleLoop':
       return '/music/icons/repeat-one-svgrepo-com.svg'
-    case 'loop':
+    case 'listLoop':
       return '/music/icons/repeat-svgrepo-com.svg'
     case 'listOnce':
       return '/music/icons/repeat-one-minimalistic-svgrepo-com.svg'
     case 'random':
       return '/music/icons/shuffle-svgrepo-com.svg'
     default:
-      return '/music/icons/repeat-one-svgrepo-com.svg'
+      return '/music/icons/repeat-svgrepo-com.svg'
   }
 })
 
 // 获取播放模式标题
 const getPlayModeTitle = () => {
   switch (playMode.value) {
-    case 'single':
+    case 'singleLoop':
       return 'Single Loop'
-    case 'loop':
+    case 'listLoop':
       return 'List Loop'
     case 'listOnce':
       return 'Play Once'
     case 'random':
       return 'Random Play'
     default:
-      return 'Single Loop'
+      return 'List Loop'
   }
 }
 
 // 处理播放结束事件
 const onEnded = () => {
-  console.log('播放结束，当前模式:', playMode.value, '当前歌曲:', currentMusic.value)
-
   // 根据播放模式处理下一首
   setTimeout(() => {
     if (musicList.value.length === 0) {
@@ -492,7 +496,7 @@ const onEnded = () => {
     let willPlayNext = false
 
     switch (playMode.value) {
-      case 'single':
+      case 'singleLoop':
         // 单曲循环，重新播放当前歌曲
         if (audioRef.value) {
           audioRef.value.currentTime = 0
@@ -506,7 +510,7 @@ const onEnded = () => {
         }
         break
 
-      case 'loop':
+      case 'listLoop':
         // 列表循环，播放下一首，循环到第一首
         const currentIndex = musicList.value.findIndex(music => music.name === currentMusic.value)
         const nextIndex = (currentIndex + 1) % musicList.value.length
@@ -526,7 +530,6 @@ const onEnded = () => {
           willPlayNext = true
         } else {
           // 是最后一首歌，停止播放
-          console.log('列表单次播放完成，停止播放')
           isPlaying.value = false
         }
         break
@@ -609,6 +612,20 @@ const playPrevious = () => {
     return
   }
 
+  // 在随机模式下，上一首也是随机选择
+  if (playMode.value === 'random') {
+    const nextSongName = getNextRandomSong()
+    if (nextSongName) {
+      const nextSong = musicList.value.find(music => music.name === nextSongName)
+      if (nextSong) {
+        playMusic(nextSong)
+      }
+    } else {
+      showHint('No available tracks')
+    }
+    return
+  }
+
   const currentIndex = musicList.value.findIndex(music => music.name === currentMusic.value)
   if (currentIndex === -1) return
 
@@ -618,8 +635,8 @@ const playPrevious = () => {
     case 'listOnce':
       previousIndex = currentIndex - 1
       break
-    case 'loop':
-    case 'single':
+    case 'listLoop':
+    case 'singleLoop':
     default:
       // 循环模式：从最后一首开始
       previousIndex = currentIndex === 0 ? musicList.value.length - 1 : currentIndex - 1
@@ -638,6 +655,20 @@ const playNext = () => {
     return
   }
 
+  // 在随机模式下，下一首也是随机选择
+  if (playMode.value === 'random') {
+    const nextSongName = getNextRandomSong()
+    if (nextSongName) {
+      const nextSong = musicList.value.find(music => music.name === nextSongName)
+      if (nextSong) {
+        playMusic(nextSong)
+      }
+    } else {
+      showHint('No available tracks')
+    }
+    return
+  }
+
   const currentIndex = musicList.value.findIndex(music => music.name === currentMusic.value)
   if (currentIndex === -1) return
 
@@ -647,8 +678,8 @@ const playNext = () => {
     case 'listOnce':
       nextIndex = currentIndex + 1
       break
-    case 'loop':
-    case 'single':
+    case 'listLoop':
+    case 'singleLoop':
     default:
       // 循环模式：从第一首开始
       nextIndex = currentIndex === musicList.value.length - 1 ? 0 : currentIndex + 1
@@ -664,22 +695,9 @@ const playNext = () => {
 const playMusic = (music: {name: string, size: number}) => {
   currentMusic.value = music.name
 
-  // 如果是随机模式，更新随机播放列表
-  if (playMode.value === 'random') {
-    // 从剩余列表中移除当前歌曲
-    const remainingIndex = remainingSongs.value.indexOf(music.name)
-    if (remainingIndex > -1) {
-      remainingSongs.value.splice(remainingIndex, 1)
-    }
-
-    // 添加到已播放列表（如果还没有）
-    if (!playedSongs.value.includes(music.name)) {
-      playedSongs.value.push(music.name)
-    }
-  }
-
   if (audioRef.value) {
     audioRef.value.load()
+    audioRef.value.volume = volume.value // 确保音量设置正确
     audioRef.value.play().then(() => {
       isPlaying.value = true // 确保播放状态正确更新
     }).catch(e => {
@@ -687,72 +705,28 @@ const playMusic = (music: {name: string, size: number}) => {
       isPlaying.value = false
     })
   }
-  showPlaylist.value = false // 播放后关闭列表
+  // 播放后不自动关闭列表，让用户继续查看和选择
 }
 
-// 初始化随机播放列表
+// 初始化随机播放列表（保留函数以避免错误，但简化逻辑）
 const initRandomPlayList = () => {
-  const songNames = musicList.value.map(music => music.name)
-  remainingSongs.value = [...songNames]
-  playedSongs.value = []
-
-  // 如果当前有正在播放的歌曲，从剩余列表中移除
-  if (currentMusic.value) {
-    const currentIndex = remainingSongs.value.indexOf(currentMusic.value)
-    if (currentIndex > -1) {
-      remainingSongs.value.splice(currentIndex, 1)
-    }
-  }
+  // 简化的随机播放不需要复杂的初始化
 }
 
 // 获取下一首随机歌曲
 const getNextRandomSong = () => {
-  // 如果剩余歌曲为空，重新初始化播放列表
-  if (remainingSongs.value.length === 0) {
-    initRandomPlayList()
-  }
+  // 简化逻辑：获取所有歌曲，排除当前歌曲
+  const allSongs = musicList.value.map(music => music.name)
+  const availableSongs = allSongs.filter(song => song !== currentMusic.value)
 
-  // 如果重新初始化后还是没有歌曲（可能是空列表）
-  if (remainingSongs.value.length === 0) {
-    return null
-  }
-
-  // 如果只剩一首歌且是当前歌，重新初始化
-  if (remainingSongs.value.length === 1 && remainingSongs.value[0] === currentMusic.value) {
-    initRandomPlayList()
-  }
-
-  // 如果重新初始化后还是没有歌曲（可能是空列表）
-  if (remainingSongs.value.length === 0) {
-    return null
-  }
-
-  // 从剩余歌曲中过滤掉当前播放的歌曲
-  const availableSongs = remainingSongs.value.filter(song => song !== currentMusic.value)
-
-  // 如果过滤后没有可用的歌曲（理论上不应该发生，但防御性编程）
+  // 如果没有可用的歌曲，返回null
   if (availableSongs.length === 0) {
-    // 重新初始化并再次尝试
-    initRandomPlayList()
-    const newAvailableSongs = remainingSongs.value.filter(song => song !== currentMusic.value)
-    if (newAvailableSongs.length === 0) {
-      return null
-    }
-    return newAvailableSongs[Math.floor(Math.random() * newAvailableSongs.length)]
+    return null
   }
 
-  // 从可用歌曲中随机选择一首
+  // 随机选择一首歌
   const randomIndex = Math.floor(Math.random() * availableSongs.length)
   const selectedSong = availableSongs[randomIndex]
-
-  // 从剩余列表中移除选中的歌曲
-  const originalIndex = remainingSongs.value.indexOf(selectedSong)
-  if (originalIndex > -1) {
-    remainingSongs.value.splice(originalIndex, 1)
-  }
-
-  // 添加到已播放列表
-  playedSongs.value.push(selectedSong)
 
   return selectedSong
 }
@@ -781,7 +755,17 @@ const scanMusicFiles = async () => {
       'ALL BGM CHANNEL,KAYOKO - FlowerGarden (feat. KAYOKO).flac',
       'ALL BGM CHANNEL,mimi - A Gentle Night (feat. mimi).flac',
       'ALL BGM CHANNEL,mimi - Improvisation (feat. mimi).flac',
-      'ALL BGM CHANNEL,MoppySound - Wet Bouquet (feat. MoppySound).flac'
+      'ALL BGM CHANNEL,mimi - Looking Forward (feat. mimi).flac',
+      'ALL BGM CHANNEL,mimi - Maybe We\'ll See A Rainbow (feat. mimi).flac',
+      'ALL BGM CHANNEL,mimi - Waltz On A Rainy Day (feat. mimi).flac',
+      'ALL BGM CHANNEL,MoppySound - Bouquet and Cafe (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,MoppySound - Cafe after the Rain (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,MoppySound - Coffee after the Rain (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,MoppySound - Heartwarming Coffee (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,MoppySound - Rain through the Window (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,MoppySound - wet Body and warm Coffee (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,MoppySound - Wet Bouquet (feat. MoppySound).flac',
+      'ALL BGM CHANNEL,SHOHEI - A cup of coffee (feat. SHOHEI).flac'
     ]
 
     // 过滤出存在的文件（基于已知列表）
@@ -798,8 +782,10 @@ const scanMusicFiles = async () => {
     musicList.value = musicFiles
     console.log('Music files loaded:', musicList.value)
 
-    // 初始化随机播放列表
-    initRandomPlayList()
+    // 如果当前是随机模式，初始化随机播放列表
+    if (playMode.value === 'random') {
+      initRandomPlayList()
+    }
   } catch (e) {
     console.log('Failed to scan music files:', e)
     musicList.value = []
@@ -1025,12 +1011,21 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
 const handleClickOutside = (e: MouseEvent) => {
   const volumeControl = document.querySelector('.volume-control-vertical')
   const speakerButton = document.querySelector('[title*="Volume"], [title*="Mute"]')
+  const musicPlayer = document.querySelector('.music-player')
 
+  // 处理音量控制的关闭
   if (showVolumeControl.value &&
       volumeControl &&
       !volumeControl.contains(e.target as Node) &&
       !speakerButton?.contains(e.target as Node)) {
     showVolumeControl.value = false
+  }
+
+  // 处理播放列表的关闭 - 点击音乐播放器外部时关闭
+  if (showPlaylist.value &&
+      musicPlayer &&
+      !musicPlayer.contains(e.target as Node)) {
+    showPlaylist.value = false
   }
 }
 
@@ -1185,6 +1180,11 @@ onMounted(async () => {
     const selectedMusic = musicList.value[randomIndex]
     currentMusic.value = selectedMusic.name
     console.log('Set random default music to:', selectedMusic.name)
+
+    // 如果当前是随机模式，初始化随机播放列表
+    if (playMode.value === 'random') {
+      initRandomPlayList()
+    }
   }
 
   // 监听窗口大小变化，调整位置
