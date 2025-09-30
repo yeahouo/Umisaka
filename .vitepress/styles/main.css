@@ -138,7 +138,7 @@ html.dark .VPHero.VPHomeHero .container .main h1 {
 }
 
 html.dark .VPHero.VPHomeHero .container .main h1::after {
-  content: "I love Yuyuko!";
+  content: "Hobby";
   visibility: visible !important;
   position: absolute;
   top: 0;
@@ -173,7 +173,7 @@ html.dark .VPHero.VPHomeHero .container .main .text {
 }
 
 html.dark .VPHero.VPHomeHero .container .main .text::after {
-  content: "Touhou project";
+  content: "Touhou";
   visibility: visible !important;
   position: absolute;
   top: 0;
