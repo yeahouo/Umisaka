@@ -67,14 +67,14 @@ onUnmounted(() => {
     display: flex;
     justify-content: flex-end; /* 改为右对齐 */
     align-items: center;
-    padding-right: 5rem; /* 增加右侧间距，让Umi卡片更靠右 */
+    padding-right: 4rem; /* 增加右侧间距，让Umi卡片更靠右 */
   }
 }
 
 /* 小屏幕手机进一步调整 */
 @media (max-width: 480px) {
   .mobile-team-container {
-    padding-right: 2.5rem; /* 小屏幕保持适当右侧间距 */
+    padding-right: 3.5rem; /* 小屏幕保持适当右侧间距 */
   }
 }
 </style>
