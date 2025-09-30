@@ -456,9 +456,18 @@ const updateProgressDisplay = () => {
 
 // 更新进度条填充效果
 const updateProgressFill = () => {
-  const progressSlider = document.querySelector('.progress-slider') as HTMLElement
-  if (progressSlider) {
-    progressSlider.style.setProperty('--progress', `${progress.value}%`)
+  if (isMobile.value) {
+    // 移动端：为竖直进度条设置填充高度
+    const progressControl = document.querySelector('.mobile-vertical-layout .progress-control') as HTMLElement
+    if (progressControl) {
+      progressControl.style.setProperty('--progress', `${progress.value}%`)
+    }
+  } else {
+    // 桌面端：为横向进度条设置填充宽度
+    const progressSlider = document.querySelector('.desktop-horizontal-layout .progress-slider') as HTMLElement
+    if (progressSlider) {
+      progressSlider.style.setProperty('--progress', `${progress.value}%`)
+    }
   }
 }
 
@@ -1610,7 +1619,7 @@ onMounted(async () => {
   padding: 10px 5px;
   width: 44px;
   height: auto;
-  min-height: 400px;
+  min-height: 440px;
   gap: 15px;
   resize: none;
   overflow: hidden;
@@ -1620,7 +1629,7 @@ onMounted(async () => {
 /* 移动端竖向模式的进度条 */
 .mobile-vertical-layout .progress-control {
   width: 6px;
-  height: 80px;
+  height: 120px;
   margin: 0;
   flex-shrink: 0;
   position: relative;
@@ -1628,29 +1637,28 @@ onMounted(async () => {
 
 .mobile-vertical-layout .progress-slider {
   width: 6px;
-  height: 80px;
+  height: 120px;
   -webkit-appearance: none;
   appearance: none;
   background: rgba(0, 0, 0, 0.1);
   border-radius: 3px;
   outline: none;
   cursor: pointer;
-  writing-mode: bt-lr; /* IE */
-  -webkit-appearance: slider-vertical; /* WebKit */
-  transform: rotate(-90deg); /* Firefox */
-  transform-origin: center;
+  -webkit-appearance: slider-vertical; /* WebKit竖直滑块 */
+  writing-mode: bt-lr; /* IE支持 */
+  orientation: vertical; /* Firefox支持 */
 }
 
 /* 移动端竖直进度条的滑块 */
 .mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   background: #333;
   border-radius: 50%;
   cursor: grab;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
 }
 
@@ -1663,25 +1671,62 @@ onMounted(async () => {
   transform: scale(1.1);
 }
 
-/* 移动端竖直进度条填充效果 */
-.mobile-vertical-layout .progress-slider {
-  --progress: 0%;
-  background: linear-gradient(to top, #333 0%, #333 var(--progress), rgba(0, 0, 0, 0.1) var(--progress), rgba(0, 0, 0, 0.1) 100%);
+/* Firefox竖直滑块支持 */
+.mobile-vertical-layout .progress-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #333;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  transition: transform 0.2s ease;
+}
+
+.mobile-vertical-layout .progress-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+.mobile-vertical-layout .progress-slider::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+/* 移动端竖直进度条填充效果 - 使用伪元素实现 */
+.mobile-vertical-layout .progress-control {
+  position: relative;
+}
+
+.mobile-vertical-layout .progress-control::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, #333, #666);
+  border-radius: 3px;
+  height: var(--progress, 0%);
+  transition: height 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 1;
 }
 
 html.dark .mobile-vertical-layout .progress-slider {
-  background: #555;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 html.dark .mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
   background: #fff;
-  width: 12px;
-  height: 12px;
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
-html.dark .mobile-vertical-layout .progress-slider {
-  --progress: 0%;
-  background: linear-gradient(to top, #fff 0%, #fff var(--progress), rgba(255, 255, 255, 0.1) var(--progress), rgba(255, 255, 255, 0.1) 100%);
+html.dark .mobile-vertical-layout .progress-slider::-moz-range-thumb {
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+html.dark .mobile-vertical-layout .progress-control::before {
+  background: linear-gradient(to top, #fff, #ccc);
 }
 
 /* 确保移动端每个控制元素都独占一行 */
@@ -2126,14 +2171,14 @@ html.dark .playlist-header {
   .music-player.mobile-vertical {
     width: 44px;
     height: auto;
-    min-height: 400px;
+    min-height: 440px;
     resize: none;
   }
 
   .mobile-vertical-layout {
     width: 44px;
     height: auto;
-    min-height: 400px;
+    min-height: 440px;
     resize: none;
   }
 
