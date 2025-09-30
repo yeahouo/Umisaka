@@ -64,7 +64,9 @@
       "Bash(git ls-tree:*)",
       "Bash(git branch:*)",
       "Bash(curl:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": [],
     "additionalDirectories": [
