@@ -160,7 +160,7 @@ const ExtendedTheme: Theme = {
     const { frontmatter } = toRefs(useData());
     const route = useRoute();
 
-    // Set default theme based on Tokyo time (only if user hasn't manually set preference)
+    // Set default theme based on local time (only if user hasn't manually set preference)
     const setDefaultThemeBasedOnTime = () => {
       // Check if we're in a browser environment
       if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
@@ -170,28 +170,49 @@ const ExtendedTheme: Theme = {
         // Only set default if user hasn't manually chosen
         if (userPreference === null) {
           const now = new Date();
-          // Tokyo time is UTC+9
-          const tokyoTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
-          const hours = tokyoTime.getHours();
+          const hours = now.getHours();
 
-          // Day mode: 6:00 - 18:00 (6 AM to 6 PM Tokyo time)
-          // Night mode: 18:00 - 6:00 (6 PM to 6 AM Tokyo time)
+          // Day mode: 6:00 - 18:00 (6 AM to 6 PM local time)
+          // Night mode: 18:00 - 6:00 (6 PM to 6 AM local time)
           const isDayTime = hours >= 6 && hours < 18;
 
           const html = document.documentElement;
-          if (isDayTime) {
-            html.classList.remove('dark');
-            localStorage.setItem('vitepress-theme-appearance', 'light');
-          } else {
+          // Force a clean theme switch to avoid mixing
+          html.classList.remove('dark');
+          if (!isDayTime) {
             html.classList.add('dark');
-            localStorage.setItem('vitepress-theme-appearance', 'dark');
           }
+
+          // Store the preference
+          localStorage.setItem('vitepress-theme-appearance', isDayTime ? 'light' : 'dark');
+
+          // Force a reflow to ensure theme is properly applied
+          void html.offsetHeight;
         }
       }
     };
 
     // Set default theme on initial load
     setDefaultThemeBasedOnTime();
+
+    // Listen for system theme changes to avoid conflicts
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      let themeChangeTimeout: NodeJS.Timeout | null = null;
+
+      mediaQuery.addEventListener('change', () => {
+        // Only respond if user hasn't set a preference
+        if (localStorage.getItem('vitepress-theme-appearance') === null) {
+          // Debounce theme changes to avoid rapid switching
+          if (themeChangeTimeout) {
+            clearTimeout(themeChangeTimeout);
+          }
+          themeChangeTimeout = setTimeout(() => {
+            setDefaultThemeBasedOnTime();
+          }, 100);
+        }
+      });
+    }
 
     // Obtain configuration from: https://giscus.app/
     giscusTalk({
