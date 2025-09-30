@@ -75,7 +75,7 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   .mobile-team-container {
     position: relative;
-    right: -3rem; /* 向右偏移 */
+    right: -2rem; /* 向右偏移 */
   }
 }
 </style>
