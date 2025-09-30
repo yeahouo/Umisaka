@@ -1,7 +1,7 @@
 <template>
   <div
     class="music-player"
-    :class="{ 'dragging': isDragging, 'mounted': isMounted }"
+    :class="{ 'dragging': isDragging, 'mounted': isMounted, 'mobile-hidden': isMobile && isHidden }"
     :style="playerStyle"
     tabindex="0"
     @mousedown="startDrag"
@@ -214,13 +214,36 @@ const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 const position = ref({ x: 20, y: 900 }) // 默认位置，X轴将在组件挂载后调整
 
+// 移动端边缘隐藏相关状态
+const isMobile = ref(false)
+const isHidden = ref(false)
+const isTouchingEdge = ref(false)
+const hideTimeout = ref<NodeJS.Timeout | null>(null)
+
 
 // 计算播放器样式
-const playerStyle = computed(() => ({
-  left: `${position.value.x}px`,
-  top: `${position.value.y}px`,
-  cursor: isDragging.value ? 'grabbing' : 'grab'
-}))
+const playerStyle = computed(() => {
+  const baseStyle = {
+    top: `${position.value.y}px`,
+    cursor: isDragging.value ? 'grabbing' : 'grab'
+  }
+
+  if (isMobile.value && isHidden.value) {
+    // 隐藏状态：只显示边缘
+    return {
+      ...baseStyle,
+      left: `${-380}px`, // 只显示20px的边缘
+      transition: 'left 0.3s ease'
+    }
+  } else {
+    // 正常显示状态
+    return {
+      ...baseStyle,
+      left: `${position.value.x}px`,
+      transition: isMobile.value ? 'left 0.3s ease' : 'none'
+    }
+  }
+})
 
 // 音乐文件路径，可以从播放列表中选择
 const musicSrc = computed(() => {
@@ -1137,7 +1160,52 @@ const finishProgressKeyAdjust = () => {
   isKeyAdjustingProgress.value = false
 }
 
+// 检测是否为移动设备
+const checkMobile = () => {
+  isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+}
+
+// 隐藏播放器到边缘
+const hidePlayer = () => {
+  if (isMobile.value) {
+    isHidden.value = true
+  }
+}
+
+// 显示播放器
+const showPlayer = () => {
+  if (isMobile.value) {
+    isHidden.value = false
+    // 3秒后自动隐藏
+    if (hideTimeout.value) {
+      clearTimeout(hideTimeout.value)
+    }
+    hideTimeout.value = setTimeout(() => {
+      hidePlayer()
+    }, 3000)
+  }
+}
+
+// 重写开始拖动函数
+const startDrag = (e: MouseEvent | TouchEvent) => {
+  if (isMobile.value && isHidden.value) {
+    showPlayer()
+    return
+  }
+
+  isDragging.value = true
+  const touch = e instanceof TouchEvent ? e.touches[0] : e as MouseEvent
+  dragOffset.value = {
+    x: touch.clientX - position.value.x,
+    y: touch.clientY - position.value.y
+  }
+  e.preventDefault()
+}
+
 onMounted(async () => {
+  // 检测移动设备
+  checkMobile()
+
   // 如果没有保存的位置，设置默认位置到搜索按钮附近
   const saved = localStorage.getItem('musicPlayerPosition')
   if (!saved) {
@@ -1310,9 +1378,21 @@ onMounted(async () => {
     if (keyRepeatTimer) {
       clearTimeout(keyRepeatTimer)
     }
+    // 清理隐藏定时器
+    if (hideTimeout.value) {
+      clearTimeout(hideTimeout.value)
+    }
     // 停止自动刷新
     stopAutoRefresh()
   })
+
+  // 如果是移动设备，设置边缘隐藏
+  if (isMobile.value) {
+    setTimeout(() => {
+      hidePlayer()
+    }, 5000) // 5秒后自动隐藏
+  }
+})
 })
 </script>
 
@@ -1363,6 +1443,28 @@ onMounted(async () => {
 .music-player:hover {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   transform: scale(1.02) translateZ(0);
+}
+
+/* 移动端边缘隐藏状态 */
+.music-player.mobile-hidden {
+  cursor: pointer;
+  border-right: 3px solid rgba(255, 255, 255, 0.6);
+  border-radius: 0 8px 8px 0;
+}
+
+.music-player.mobile-hidden .music-controls {
+  overflow: hidden;
+}
+
+.music-player.mobile-hidden .music-controls::before {
+  content: '♪';
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
 }
 
 .music-controls {
