@@ -160,6 +160,36 @@ const ExtendedTheme: Theme = {
     const { frontmatter } = toRefs(useData());
     const route = useRoute();
 
+    // Set default theme based on Tokyo time (only if user hasn't manually set preference)
+    const setDefaultThemeBasedOnTime = () => {
+      // Check if user has manually set theme preference
+      const userPreference = localStorage.getItem('vitepress-theme-appearance');
+
+      // Only set default if user hasn't manually chosen
+      if (userPreference === null) {
+        const now = new Date();
+        // Tokyo time is UTC+9
+        const tokyoTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
+        const hours = tokyoTime.getHours();
+
+        // Day mode: 6:00 - 18:00 (6 AM to 6 PM Tokyo time)
+        // Night mode: 18:00 - 6:00 (6 PM to 6 AM Tokyo time)
+        const isDayTime = hours >= 6 && hours < 18;
+
+        const html = document.documentElement;
+        if (isDayTime) {
+          html.classList.remove('dark');
+          localStorage.setItem('vitepress-theme-appearance', 'light');
+        } else {
+          html.classList.add('dark');
+          localStorage.setItem('vitepress-theme-appearance', 'dark');
+        }
+      }
+    };
+
+    // Set default theme on initial load
+    setDefaultThemeBasedOnTime();
+
     // Obtain configuration from: https://giscus.app/
     giscusTalk({
       repo: 'Jackiexiao/nolebase-template',
