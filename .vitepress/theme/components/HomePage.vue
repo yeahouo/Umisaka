@@ -67,7 +67,7 @@ onUnmounted(() => {
     display: flex;
     justify-content: flex-end; /* 改为右对齐 */
     align-items: center;
-    padding-right: 4rem; /* 增加右侧间距，让Umi卡片更靠右 */
+    padding-right: 5rem; /* 增加右侧间距，让Umi卡片更靠右 */
   }
 }
 
