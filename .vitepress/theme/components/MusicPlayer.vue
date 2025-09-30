@@ -292,6 +292,7 @@ const isMobile = ref(false)
 const isHidden = ref(true) // 移动端默认隐藏
 const isTouchingEdge = ref(false)
 const hideTimeout = ref<NodeJS.Timeout | null>(null)
+const idleTimeout = ref<NodeJS.Timeout | null>(null) // 新增闲置定时器
 const SLIDE_OUT_POSITION = -40 // 完全隐藏的位置
 let SLIDE_IN_POSITION = 0 // 滑出后的位置，将在客户端初始化
 
@@ -346,6 +347,11 @@ const showControls = computed(() => {
 })
 
 const togglePlay = () => {
+  // 移动端重置闲置定时器
+  if (isMobile.value) {
+    resetIdleTimer()
+  }
+
   // 检查单次播放模式是否已完成
   if (playMode.value === 'listOnce' && !isPlaying.value) {
     const currentIndex = musicList.value.findIndex(music => music.name === currentMusic.value)
@@ -371,6 +377,11 @@ const togglePlay = () => {
 }
 
 const toggleVolumeControl = () => {
+  // 移动端重置闲置定时器
+  if (isMobile.value) {
+    resetIdleTimer()
+  }
+
   const currentTime = Date.now()
 
   if (currentTime - lastClickTime.value < 300) {
@@ -590,6 +601,11 @@ const togglePlaylist = () => {
 
 // 播放模式切换
 const togglePlayMode = () => {
+  // 移动端重置闲置定时器
+  if (isMobile.value) {
+    resetIdleTimer()
+  }
+
   const modes: PlayMode[] = ['singleLoop', 'listLoop', 'listOnce', 'random']
   const currentIndex = modes.indexOf(playMode.value)
   const nextIndex = (currentIndex + 1) % modes.length
@@ -752,6 +768,11 @@ const hasNext = () => {
 
 // 播放上一首
 const playPrevious = () => {
+  // 移动端重置闲置定时器
+  if (isMobile.value) {
+    resetIdleTimer()
+  }
+
   if (!hasPrevious()) {
     showHint('No Previous Track')
     return
@@ -795,6 +816,11 @@ const playPrevious = () => {
 
 // 播放下一首
 const playNext = () => {
+  // 移动端重置闲置定时器
+  if (isMobile.value) {
+    resetIdleTimer()
+  }
+
   if (!hasNext()) {
     showHint('No Next Track')
     return
@@ -1218,6 +1244,10 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
       if (animationId) {
         cancelAnimationFrame(animationId)
       }
+      // 移动端拖拽结束后重置闲置定时器
+      if (isMobile.value) {
+        resetIdleTimer()
+      }
     }
   }
 
@@ -1411,10 +1441,33 @@ const checkMobile = () => {
   }
 }
 
+// 重置闲置定时器
+const resetIdleTimer = () => {
+  if (!isMobile.value) return
+
+  // 清除之前的闲置定时器
+  if (idleTimeout.value) {
+    clearTimeout(idleTimeout.value)
+    idleTimeout.value = null
+  }
+
+  // 如果播放器当前是显示状态，设置5秒后自动隐藏
+  if (!isHidden.value) {
+    idleTimeout.value = setTimeout(() => {
+      hidePlayer()
+    }, 5000) // 5秒后自动隐藏
+  }
+}
+
 // 隐藏播放器到边缘
 const hidePlayer = () => {
   if (isMobile.value) {
     isHidden.value = true
+    // 隐藏时清除闲置定时器
+    if (idleTimeout.value) {
+      clearTimeout(idleTimeout.value)
+      idleTimeout.value = null
+    }
   }
 }
 
@@ -1422,7 +1475,8 @@ const hidePlayer = () => {
 const showPlayer = () => {
   if (isMobile.value) {
     isHidden.value = false
-    // 移动端不自动隐藏，让用户手动拖回
+    // 显示时重置闲置定时器
+    resetIdleTimer()
   }
 }
 
@@ -1625,6 +1679,10 @@ onMounted(async () => {
     // 清理隐藏定时器
     if (hideTimeout.value) {
       clearTimeout(hideTimeout.value)
+    }
+    // 清理闲置定时器
+    if (idleTimeout.value) {
+      clearTimeout(idleTimeout.value)
     }
     // 停止自动刷新
     stopAutoRefresh()
