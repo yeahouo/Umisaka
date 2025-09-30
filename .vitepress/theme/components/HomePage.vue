@@ -64,6 +64,17 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .mobile-team-container {
     padding: 0.5rem;
+    display: flex;
+    justify-content: flex-end; /* 改为右对齐 */
+    align-items: center;
+    padding-right: 2rem; /* 右侧增加间距 */
+  }
+}
+
+/* 小屏幕手机进一步调整 */
+@media (max-width: 480px) {
+  .mobile-team-container {
+    padding-right: 1rem; /* 小屏幕减少右侧间距 */
   }
 }
 </style>
