@@ -59,18 +59,10 @@
         </button>
 
         <!-- 进度条 -->
-        <div class="progress-control">
-          <input
-            type="range"
-            min="0"
-            max="99"
-            step="0.01"
-            v-model="progress"
-            @input="updateProgress"
-            @click="handleProgressClick"
-            class="progress-slider"
-            tabindex="0"
-          />
+        <div class="progress-control" @click="handleMobileProgressClick">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ height: progress + '%' }"></div>
+          </div>
         </div>
 
         <!-- 下一曲按钮 -->
@@ -435,6 +427,28 @@ const handleProgressClick = (e: MouseEvent) => {
   audioRef.value.currentTime = newProgress * audioRef.value.duration
 }
 
+// 移动端进度条点击处理
+const handleMobileProgressClick = (e: MouseEvent | TouchEvent) => {
+  e.stopPropagation() // 阻止事件冒泡到播放器拖拽
+
+  if (!audioRef.value || !audioRef.value.duration) return
+
+  const progressControl = e.currentTarget as HTMLElement
+  const rect = progressControl.getBoundingClientRect()
+
+  // 获取点击位置（支持触摸事件）
+  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+  // 移动端竖直进度条：从下往上，Y轴计算
+  const percentage = (rect.bottom - clientY) / rect.height
+
+  // 限制最大进度为99%，留出1%的空间防止直接触发结束
+  const newProgress = Math.max(0, Math.min(0.99, percentage))
+
+  progress.value = newProgress * 100
+  audioRef.value.currentTime = newProgress * audioRef.value.duration
+}
+
 // 更新播放进度显示
 const updateProgressDisplay = () => {
   if (audioRef.value && audioRef.value.duration) {
@@ -456,19 +470,12 @@ const updateProgressDisplay = () => {
 
 // 更新进度条填充效果
 const updateProgressFill = () => {
-  if (isMobile.value) {
-    // 移动端：为竖直进度条设置填充高度
-    const progressControl = document.querySelector('.mobile-vertical-layout .progress-control') as HTMLElement
-    if (progressControl) {
-      progressControl.style.setProperty('--progress', `${progress.value}%`)
-    }
-  } else {
-    // 桌面端：为横向进度条设置填充宽度
-    const progressSlider = document.querySelector('.desktop-horizontal-layout .progress-slider') as HTMLElement
-    if (progressSlider) {
-      progressSlider.style.setProperty('--progress', `${progress.value}%`)
-    }
+  // 桌面端：为横向进度条设置填充宽度
+  const progressSlider = document.querySelector('.desktop-horizontal-layout .progress-slider') as HTMLElement
+  if (progressSlider) {
+    progressSlider.style.setProperty('--progress', `${progress.value}%`)
   }
+  // 移动端进度条现在通过Vue的响应式数据自动更新，不需要手动设置CSS变量
 }
 
 
@@ -1155,14 +1162,39 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
     }
   }
 
-  // 移动端使用 passive: true 提升滚动性能
+  // 移动端使用 passive: false 防止页面滚动
   document.addEventListener('mousemove', handleDrag)
   document.addEventListener('mouseup', stopDrag)
-  document.addEventListener('touchmove', handleDrag, { passive: isTouchEvent })
+  document.addEventListener('touchmove', handleDrag, { passive: false })
   document.addEventListener('touchend', stopDrag)
+  document.addEventListener('touchcancel', stopDrag)
 
   // 防止拖动时选中文本和页面滚动
   e.preventDefault()
+
+  // 移动端额外阻止触摸事件的默认行为
+  if (isTouchEvent) {
+    e.stopPropagation()
+
+    // 在移动端阻止整个文档的触摸移动
+    const preventDefaultTouchMove = (event: TouchEvent) => {
+      if (isDragging.value) {
+        event.preventDefault()
+      }
+    }
+
+    document.addEventListener('touchmove', preventDefaultTouchMove, { passive: false })
+
+    // 在停止拖动时移除事件监听器
+    const originalStopDrag = stopDrag
+    const enhancedStopDrag = () => {
+      originalStopDrag()
+      document.removeEventListener('touchmove', preventDefaultTouchMove)
+    }
+
+    // 替换原始的stopDrag函数
+    stopDrag = enhancedStopDrag
+  }
 }
 
 // 点击其他地方隐藏音量条
@@ -1539,6 +1571,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 全局重置移动端进度条相关元素 */
+.mobile-vertical-layout .progress-control,
+.mobile-vertical-layout .progress-control *,
+.mobile-vertical-layout .progress-bar,
+.mobile-vertical-layout .progress-fill {
+  accent-color: #000 !important;
+  color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  -webkit-appearance: none !important;
+}
+
 .music-player {
   position: fixed;
   z-index: 1000;
@@ -1665,101 +1711,60 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: stretch;
+  cursor: pointer;
+  border-radius: 3px;
+  overflow: hidden;
+  /* 确保没有浏览器默认的蓝色 */
+  accent-color: #000;
 }
 
-.mobile-vertical-layout .progress-slider {
+/* 移动端进度条背景 */
+.mobile-vertical-layout .progress-bar {
   width: 6px;
-  height: 120px;
-  -webkit-appearance: none;
-  appearance: none;
+  height: 100%;
   background: #ccc;
   border-radius: 3px;
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: slider-vertical; /* WebKit竖直滑块 */
-  writing-mode: bt-lr; /* IE支持 */
-  orientation: vertical; /* Firefox支持 */
-}
-
-/* 移动端竖直进度条的滑块 */
-.mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #333;
-  border-radius: 50%;
-  cursor: grab;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease;
-}
-
-.mobile-vertical-layout .progress-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-.mobile-vertical-layout .progress-slider::-webkit-slider-thumb:active {
-  cursor: grabbing;
-  transform: scale(1.1);
-}
-
-/* Firefox竖直滑块支持 */
-.mobile-vertical-layout .progress-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: #333;
-  border-radius: 50%;
-  cursor: grab;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  border: none;
-  transition: transform 0.2s ease;
-}
-
-.mobile-vertical-layout .progress-slider::-moz-range-thumb:hover {
-  transform: scale(1.2);
-}
-
-.mobile-vertical-layout .progress-slider::-moz-range-thumb:active {
-  cursor: grabbing;
-  transform: scale(1.1);
-}
-
-/* 移动端竖直进度条填充效果 - 使用伪元素实现 */
-.mobile-vertical-layout .progress-control {
   position: relative;
+  overflow: hidden;
+  /* 重置所有可能的蓝色 */
+  color: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
-.mobile-vertical-layout .progress-control::before {
-  content: '';
+/* 移动端进度条填充 */
+.mobile-vertical-layout .progress-fill {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
+  left: 0;
+  right: 0;
   background: #000;
   border-radius: 3px;
-  height: var(--progress, 0%);
-  transition: height 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-  z-index: 1;
+  transition: height 0.2s ease;
+  /* 重置所有可能的蓝色 */
+  color: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
-html.dark .mobile-vertical-layout .progress-slider {
+html.dark .mobile-vertical-layout .progress-bar {
   background: #666;
+  /* 重置所有可能的蓝色 */
+  color: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
-html.dark .mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
+html.dark .mobile-vertical-layout .progress-fill {
   background: #fff;
-  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-html.dark .mobile-vertical-layout .progress-slider::-moz-range-thumb {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
-}
-
-html.dark .mobile-vertical-layout .progress-control::before {
-  background: #fff;
+  /* 重置所有可能的蓝色 */
+  color: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 /* 确保移动端每个控制元素都独占一行 */
