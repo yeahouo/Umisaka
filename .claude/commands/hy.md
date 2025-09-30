@@ -1,0 +1,1 @@
+读取.task-logs下的activeContext.md文件和最新的task-log文件，查看项目最新状态，分析项目当前状态和待办事项并提供简洁的项目状态总结
