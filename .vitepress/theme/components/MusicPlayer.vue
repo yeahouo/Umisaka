@@ -64,7 +64,7 @@
             type="range"
             min="0"
             max="99"
-            step="0.1"
+            step="0.01"
             v-model="progress"
             @input="updateProgress"
             @click="handleProgressClick"
@@ -1626,11 +1626,14 @@ onMounted(async () => {
 
 /* 移动端竖向模式的进度条 */
 .mobile-vertical-layout .progress-control {
-  width: 6px;
+  width: 24px;
   height: 120px;
   margin: 0;
   flex-shrink: 0;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 
 .mobile-vertical-layout .progress-slider {
@@ -1638,7 +1641,7 @@ onMounted(async () => {
   height: 120px;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(0, 0, 0, 0.1);
+  background: #ccc;
   border-radius: 3px;
   outline: none;
   cursor: pointer;
@@ -1699,9 +1702,10 @@ onMounted(async () => {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, #333, #666);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  background: #000;
   border-radius: 3px;
   height: var(--progress, 0%);
   transition: height 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1710,7 +1714,7 @@ onMounted(async () => {
 }
 
 html.dark .mobile-vertical-layout .progress-slider {
-  background: rgba(255, 255, 255, 0.1);
+  background: #666;
 }
 
 html.dark .mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
@@ -1724,7 +1728,7 @@ html.dark .mobile-vertical-layout .progress-slider::-moz-range-thumb {
 }
 
 html.dark .mobile-vertical-layout .progress-control::before {
-  background: linear-gradient(to top, #fff, #ccc);
+  background: #fff;
 }
 
 /* 确保移动端每个控制元素都独占一行 */
