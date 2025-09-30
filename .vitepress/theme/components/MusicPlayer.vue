@@ -1550,8 +1550,8 @@ onMounted(async () => {
 /* 移动端边缘隐藏状态 */
 .music-player.mobile-hidden {
   cursor: pointer;
-  border-right: 3px solid rgba(255, 255, 255, 0.6);
-  border-radius: 0 8px 8px 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0;
 }
 
 .music-player.mobile-hidden .music-controls {
@@ -1570,9 +1570,9 @@ onMounted(async () => {
 }
 
 .music-controls {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
   border-radius: 0;
   transition: all 0.3s ease;
   cursor: grab;
@@ -1596,36 +1596,50 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 8px;
-  width: 60px;
+  justify-content: flex-start;
+  padding: 8px 4px;
+  width: 44px;
   height: auto;
-  min-height: 400px;
-  gap: 15px;
+  min-height: 300px;
+  gap: 12px;
+  resize: none;
+  overflow: hidden;
+  flex-wrap: nowrap;
 }
 
 /* 移动端竖向模式的进度条 */
 .mobile-vertical-layout .progress-control {
-  width: 44px;
+  width: 36px;
   margin: 0;
-  height: 8px;
+  height: 6px;
+  flex-shrink: 0;
 }
 
 .mobile-vertical-layout .progress-slider {
-  width: 44px;
-  height: 8px;
+  width: 36px;
+  height: 6px;
+}
+
+/* 确保移动端每个控制元素都独占一行 */
+.mobile-vertical-layout > * {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 html.dark .music-controls {
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
   border: none;
   box-shadow: none;
 }
 
 .control-btn {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border: none;
   background: none;
   cursor: pointer;
@@ -1648,10 +1662,10 @@ html.dark .control-btn:hover {
 .play-icon {
   width: 0;
   height: 0;
-  border-left: 8px solid #333;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  margin-left: 2px;
+  border-left: 6px solid #333;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  margin-left: 1px;
 }
 
 html.dark .play-icon {
@@ -1659,17 +1673,17 @@ html.dark .play-icon {
 }
 
 .pause-icon {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .pause-icon::before,
 .pause-icon::after {
   content: '';
   width: 3px;
-  height: 12px;
+  height: 10px;
   background: #333;
 }
 
@@ -1689,8 +1703,8 @@ html.dark .pause-icon::after {
 
 /* SVG图标样式 */
 .icon-svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   pointer-events: none;
   filter: brightness(0);
 }
@@ -1701,8 +1715,8 @@ html.dark .icon-svg {
 
 /* 导航按钮图标样式 */
 .nav-icon {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   transition: opacity 0.2s ease;
 }
 
@@ -2046,15 +2060,17 @@ html.dark .playlist-header {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .music-player.mobile-vertical {
-    width: 60px;
+    width: 44px;
     height: auto;
-    min-height: 400px;
+    min-height: 300px;
+    resize: none;
   }
 
   .mobile-vertical-layout {
-    width: 60px;
+    width: 44px;
     height: auto;
-    min-height: 400px;
+    min-height: 300px;
+    resize: none;
   }
 
   .music-playlist {
