@@ -417,7 +417,17 @@ const handleProgressClick = (e: MouseEvent) => {
   if (!progressSlider || !audioRef.value || !audioRef.value.duration) return
 
   const rect = progressSlider.getBoundingClientRect()
-  const percentage = (e.clientX - rect.left) / rect.width
+
+  // 根据是否为移动端竖直进度条计算不同的百分比
+  let percentage
+  if (isMobile.value && progressSlider.closest('.mobile-vertical-layout')) {
+    // 移动端竖直进度条：从下往上，Y轴计算
+    percentage = (rect.bottom - e.clientY) / rect.height
+  } else {
+    // 桌面端横向进度条：从左到右，X轴计算
+    percentage = (e.clientX - rect.left) / rect.width
+  }
+
   // 限制最大进度为99%，留出1%的空间防止直接触发结束
   const newProgress = Math.max(0, Math.min(0.99, percentage))
 
@@ -1597,11 +1607,11 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 8px 4px;
+  padding: 10px 5px;
   width: 44px;
   height: auto;
-  min-height: 300px;
-  gap: 12px;
+  min-height: 400px;
+  gap: 15px;
   resize: none;
   overflow: hidden;
   flex-wrap: nowrap;
@@ -1609,15 +1619,69 @@ onMounted(async () => {
 
 /* 移动端竖向模式的进度条 */
 .mobile-vertical-layout .progress-control {
-  width: 36px;
+  width: 6px;
+  height: 80px;
   margin: 0;
-  height: 6px;
   flex-shrink: 0;
+  position: relative;
 }
 
 .mobile-vertical-layout .progress-slider {
-  width: 36px;
-  height: 6px;
+  width: 6px;
+  height: 80px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  writing-mode: bt-lr; /* IE */
+  -webkit-appearance: slider-vertical; /* WebKit */
+  transform: rotate(-90deg); /* Firefox */
+  transform-origin: center;
+}
+
+/* 移动端竖直进度条的滑块 */
+.mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #333;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.mobile-vertical-layout .progress-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.mobile-vertical-layout .progress-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+/* 移动端竖直进度条填充效果 */
+.mobile-vertical-layout .progress-slider {
+  --progress: 0%;
+  background: linear-gradient(to top, #333 0%, #333 var(--progress), rgba(0, 0, 0, 0.1) var(--progress), rgba(0, 0, 0, 0.1) 100%);
+}
+
+html.dark .mobile-vertical-layout .progress-slider {
+  background: #555;
+}
+
+html.dark .mobile-vertical-layout .progress-slider::-webkit-slider-thumb {
+  background: #fff;
+  width: 12px;
+  height: 12px;
+}
+
+html.dark .mobile-vertical-layout .progress-slider {
+  --progress: 0%;
+  background: linear-gradient(to top, #fff 0%, #fff var(--progress), rgba(255, 255, 255, 0.1) var(--progress), rgba(255, 255, 255, 0.1) 100%);
 }
 
 /* 确保移动端每个控制元素都独占一行 */
@@ -2062,14 +2126,14 @@ html.dark .playlist-header {
   .music-player.mobile-vertical {
     width: 44px;
     height: auto;
-    min-height: 300px;
+    min-height: 400px;
     resize: none;
   }
 
   .mobile-vertical-layout {
     width: 44px;
     height: auto;
-    min-height: 300px;
+    min-height: 400px;
     resize: none;
   }
 
