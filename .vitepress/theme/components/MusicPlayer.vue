@@ -778,7 +778,10 @@ const scanMusicFiles = async () => {
     // 由于浏览器安全限制，我们无法直接扫描文件系统
     // 这里使用一个智能的策略：先尝试已知的文件，然后动态检测
     const knownFiles: string[] = [
-      'mikeeysmind - Ethereal.flac'
+      'ALL BGM CHANNEL,KAYOKO - FlowerGarden (feat. KAYOKO).flac',
+      'ALL BGM CHANNEL,mimi - A Gentle Night (feat. mimi).flac',
+      'ALL BGM CHANNEL,mimi - Improvisation (feat. mimi).flac',
+      'ALL BGM CHANNEL,MoppySound - Wet Bouquet (feat. MoppySound).flac'
     ]
 
     // 过滤出存在的文件（基于已知列表）
