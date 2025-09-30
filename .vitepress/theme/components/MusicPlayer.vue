@@ -956,6 +956,12 @@ const loadPosition = () => {
 
 // 开始拖动
 const startDrag = (e: MouseEvent | TouchEvent) => {
+  // 如果是移动端且播放器隐藏，显示播放器
+  if (isMobile.value && isHidden.value) {
+    showPlayer()
+    return
+  }
+
   // 如果点击的是控制按钮、音量控制区域或进度条，不触发拖动
   if ((e.target as HTMLElement).closest('.control-btn, .volume-control-vertical, .progress-control')) {
     return
@@ -1186,21 +1192,6 @@ const showPlayer = () => {
   }
 }
 
-// 重写开始拖动函数
-const startDrag = (e: MouseEvent | TouchEvent) => {
-  if (isMobile.value && isHidden.value) {
-    showPlayer()
-    return
-  }
-
-  isDragging.value = true
-  const touch = e instanceof TouchEvent ? e.touches[0] : e as MouseEvent
-  dragOffset.value = {
-    x: touch.clientX - position.value.x,
-    y: touch.clientY - position.value.y
-  }
-  e.preventDefault()
-}
 
 onMounted(async () => {
   // 检测移动设备
