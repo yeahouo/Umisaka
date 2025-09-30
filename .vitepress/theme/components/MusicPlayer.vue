@@ -227,6 +227,9 @@
       v-if="showPlaylist"
       class="music-playlist"
       :class="{ show: showPlaylist }"
+      @touchstart="handlePlaylistTouchStart"
+      @touchmove="handlePlaylistTouchMove"
+      @touchend="handlePlaylistTouchEnd"
     >
       <div class="cloud-texture"></div>
       <div class="playlist-header">Playlist</div>
@@ -534,6 +537,38 @@ const onError = (e: Event) => {
   isPlaying.value = false
 }
 
+// 播放列表触摸事件相关状态
+let isPlaylistScrolling = false
+let playlistTouchStartY = 0
+let playlistTouchStartTime = 0
+
+// 播放列表触摸开始事件
+const handlePlaylistTouchStart = (e: TouchEvent) => {
+  isPlaylistScrolling = false
+  playlistTouchStartY = e.touches[0].clientY
+  playlistTouchStartTime = Date.now()
+}
+
+// 播放列表触摸移动事件
+const handlePlaylistTouchMove = (e: TouchEvent) => {
+  const touchY = e.touches[0].clientY
+  const deltaY = Math.abs(touchY - playlistTouchStartY)
+  const deltaTime = Date.now() - playlistTouchStartTime
+
+  // 如果移动距离超过阈值且时间较短，认为是滑动操作
+  if (deltaY > 10 && deltaTime < 200) {
+    isPlaylistScrolling = true
+    e.preventDefault() // 阻止页面滚动
+  }
+}
+
+// 播放列表触摸结束事件
+const handlePlaylistTouchEnd = () => {
+  setTimeout(() => {
+    isPlaylistScrolling = false
+  }, 100)
+}
+
 // 播放列表相关函数
 const togglePlaylist = () => {
   showPlaylist.value = !showPlaylist.value
@@ -806,6 +841,11 @@ const playNext = () => {
 
 // 播放选中的音乐
 const playMusic = (music: {name: string, size: number}) => {
+  // 如果正在滑动播放列表，不触发播放
+  if (isPlaylistScrolling) {
+    return
+  }
+
   currentMusic.value = music.name
 
   if (audioRef.value) {
@@ -813,12 +853,34 @@ const playMusic = (music: {name: string, size: number}) => {
     audioRef.value.volume = volume.value // 确保音量设置正确
     audioRef.value.play().then(() => {
       isPlaying.value = true // 确保播放状态正确更新
+      // 添加播放成功的视觉反馈
+      updatePlaylistItemVisualFeedback(music.name)
     }).catch(e => {
       console.log('Audio play failed:', e)
       isPlaying.value = false
     })
   }
   // 播放后不自动关闭列表，让用户继续查看和选择
+}
+
+// 更新播放列表项的视觉反馈
+const updatePlaylistItemVisualFeedback = (musicName: string) => {
+  nextTick(() => {
+    const items = document.querySelectorAll('.playlist-item')
+    items.forEach((item) => {
+      const musicInfo = item.querySelector('.music-name')
+      if (musicInfo && musicInfo.textContent === musicName) {
+        // 添加一个短暂的播放成功动画
+        item.style.transform = 'scale(1.02)'
+        item.style.backgroundColor = 'rgba(0, 122, 255, 0.1)'
+
+        setTimeout(() => {
+          item.style.transform = ''
+          item.style.backgroundColor = ''
+        }, 300)
+      }
+    })
+  })
 }
 
 // 初始化随机播放列表（保留函数以避免错误，但简化逻辑）
@@ -1198,6 +1260,8 @@ const handleClickOutside = (e: MouseEvent) => {
   const volumeControl = document.querySelector('.volume-control-vertical')
   const speakerButton = document.querySelector('[title*="Volume"], [title*="Mute"]')
   const musicPlayer = document.querySelector('.music-player')
+  const playlist = document.querySelector('.music-playlist')
+  const playlistButton = document.querySelector('[title*="Playlist"], [title*="Open Playlist"], [title*="Close Playlist"]')
 
   // 处理音量控制的关闭
   if (showVolumeControl.value &&
@@ -1207,10 +1271,14 @@ const handleClickOutside = (e: MouseEvent) => {
     showVolumeControl.value = false
   }
 
-  // 处理播放列表的关闭 - 点击音乐播放器外部时关闭
+  // 处理播放列表的关闭 - 点击播放列表和播放列表按钮外部时才关闭
   if (showPlaylist.value &&
       musicPlayer &&
-      !musicPlayer.contains(e.target as Node)) {
+      playlist &&
+      playlistButton &&
+      !musicPlayer.contains(e.target as Node) &&
+      !playlist.contains(e.target as Node) &&
+      !playlistButton.contains(e.target as Node)) {
     showPlaylist.value = false
   }
 }
@@ -2079,6 +2147,14 @@ html.dark .music-playlist {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   opacity: 0;
   transform: translateY(-10px);
+  /* 移动端优化 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  /* 增加触摸目标大小 */
+  min-height: 44px; /* iOS推荐的最小触摸目标 */
+  display: flex;
+  align-items: center;
 }
 
 .playlist-item:last-child {
@@ -2095,8 +2171,17 @@ html.dark .music-playlist {
   transform: translateY(-2px);
 }
 
+.playlist-item:active {
+  transform: scale(0.98);
+  background: rgba(0, 122, 255, 0.1);
+}
+
 html.dark .playlist-item:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .playlist-item:active {
+  background: rgba(0, 122, 255, 0.2);
 }
 
 .playlist-item.active {
@@ -2158,6 +2243,10 @@ html.dark .playlist-header {
     left: auto;
     right: 0;
     width: 200px;
+    /* 优化移动端滚动体验 */
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
   }
 
   /* 移动端音量控制调整 */
