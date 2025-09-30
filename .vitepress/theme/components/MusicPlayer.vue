@@ -1376,7 +1376,7 @@ onMounted(async () => {
   border-radius: 0;
   transition: all 0.3s ease;
   cursor: grab;
-  width: 500px;
+  width: 400px;
   height: 100%;
   box-sizing: border-box;
   border: none;
