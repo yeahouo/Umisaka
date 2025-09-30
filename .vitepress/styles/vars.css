@@ -33,7 +33,8 @@
   --vp-c-sky-soft: rgba(73, 161, 212, 0.84);
 }
 
-.dark {
+/* 统一使用 html.dark 选择器以确保一致性 */
+html.dark {
   --vp-c-sky-1: #49a3d7;
   --vp-c-sky-2: #58b1e5;
   --vp-c-sky-3: #58b1e5;
@@ -101,7 +102,7 @@
 }
 
 /* 暗色模式主页样式 */
-.dark:root {
+html.dark {
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: -webkit-linear-gradient(
     120deg,
@@ -117,13 +118,13 @@
 }
 
 @media (min-width: 640px) {
-  .dark:root {
+  html.dark {
     --vp-home-hero-image-filter: blur(56px);
   }
 }
 
 @media (min-width: 960px) {
-  .dark:root {
+  html.dark {
     --vp-home-hero-image-filter: blur(72px);
   }
 }
@@ -137,7 +138,7 @@
   --vp-custom-block-tip-code-bg: #cbd9dd7d;
 }
 
-.dark:root {
+html.dark {
   /* 配置一下在暗色模式下 tips 的自定义块的颜色为非默认的产品色，避免与文字不兼容导致可读性下降 */
   --vp-custom-block-tip-bg: #02474e;
   --vp-custom-block-tip-code-bg: #0d1e1e9c;
