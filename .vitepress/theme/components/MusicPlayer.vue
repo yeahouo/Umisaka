@@ -122,19 +122,7 @@
         />
       </button>
 
-      <button
-        class="control-btn"
-        @click="refreshPlaylist"
-        title="Refresh Playlist"
-      >
-        <img
-          src="/music/icons/list-music-svgrepo-com.svg"
-          alt="Refresh"
-          class="icon-svg"
-          style="transform: rotate(270deg);"
-        />
-      </button>
-    </div>
+      </div>
 
     <!-- Vertical Volume Control -->
     <div
