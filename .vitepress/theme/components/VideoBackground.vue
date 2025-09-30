@@ -8,8 +8,13 @@
         muted
         loop
         playsinline
+        webkit-playsinline
+        x5-playsinline
+        x5-video-player-type="h5"
+        x5-video-player-fullscreen="false"
         class="video-bg"
         @loadeddata="onVideoLoaded"
+        @click="handleVideoClick"
       >
         <source src="/background.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -25,8 +30,13 @@
         muted
         loop
         playsinline
+        webkit-playsinline
+        x5-playsinline
+        x5-video-player-type="h5"
+        x5-video-player-fullscreen="false"
         class="video-bg dark-video"
         @loadeddata="onVideoLoaded"
+        @click="handleVideoClick"
       >
         <source src="/wallpaper.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -73,18 +83,40 @@ const onVideoLoaded = () => {
   isLoaded.value = true
 }
 
+const handleVideoClick = () => {
+  // 移动端点击视频时尝试播放
+  if (lightVideoRef.value && showLightVideo.value) {
+    lightVideoRef.value.play().catch(e => {
+      console.log('Light video play on click failed:', e)
+    })
+  }
+  if (darkVideoRef.value && showDarkVideo.value) {
+    darkVideoRef.value.play().catch(e => {
+      console.log('Dark video play on click failed:', e)
+    })
+  }
+}
+
 onMounted(() => {
   // 确保视频自动播放
-  if (lightVideoRef.value) {
-    lightVideoRef.value.play().catch(e => {
-      console.log('Light video autoplay failed:', e)
+  const attemptVideoPlay = (videoRef: HTMLVideoElement | undefined, videoName: string) => {
+    if (!videoRef) return
+
+    videoRef.play().catch(e => {
+      console.log(`${videoName} video autoplay failed:`, e)
+
+      // 移动端策略：确保静音并重试播放
+      videoRef.muted = true
+      videoRef.play().then(() => {
+        console.log(`${videoName} video autoplay succeeded with mute`)
+      }).catch(() => {
+        console.log(`${videoName} video muted autoplay also failed`)
+      })
     })
   }
-  if (darkVideoRef.value) {
-    darkVideoRef.value.play().catch(e => {
-      console.log('Dark video autoplay failed:', e)
-    })
-  }
+
+  attemptVideoPlay(lightVideoRef.value, 'Light')
+  attemptVideoPlay(darkVideoRef.value, 'Dark')
 })
 </script>
 
