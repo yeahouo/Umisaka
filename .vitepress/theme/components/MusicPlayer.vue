@@ -58,13 +58,7 @@
           />
         </button>
 
-        <!-- 进度条 -->
-        <div class="progress-control" @click="handleMobileProgressClick">
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ height: progress + '%' }"></div>
-          </div>
-        </div>
-
+  
         <!-- 下一曲按钮 -->
         <button
           class="control-btn nav-btn"
@@ -301,13 +295,15 @@ let keyRepeatTimer: NodeJS.Timeout | null = null
 // 拖动相关状态
 const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
-const position = ref({ x: 20, y: 900 }) // 默认位置，X轴将在组件挂载后调整
+const position = ref({ x: 20, y: 900 }) // 默认位置，将在组件挂载后调整
 
 // 移动端边缘隐藏相关状态
 const isMobile = ref(false)
-const isHidden = ref(false)
+const isHidden = ref(true) // 移动端默认隐藏
 const isTouchingEdge = ref(false)
 const hideTimeout = ref<NodeJS.Timeout | null>(null)
+const SLIDE_OUT_POSITION = -40 // 完全隐藏的位置
+let SLIDE_IN_POSITION = window.innerWidth - 60 // 滑出后的位置
 
 
 // 计算播放器样式
@@ -317,19 +313,22 @@ const playerStyle = computed(() => {
     cursor: isDragging.value ? 'grabbing' : 'grab'
   }
 
-  if (isMobile.value && isHidden.value) {
-    // 隐藏状态：只显示边缘
+  if (isMobile.value) {
+    // 移动端：侧滑模式
+    const targetLeft = isHidden.value ? SLIDE_OUT_POSITION : SLIDE_IN_POSITION
     return {
       ...baseStyle,
-      left: `${-40}px`, // 只显示20px的边缘（移动端播放器宽度60px）
-      transition: isDragging.value ? 'none' : 'left 0.3s ease'
+      left: `${targetLeft}px`,
+      transition: isDragging.value ? 'none' : 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: isDragging.value ? 'scale(1.05)' : 'scale(1)',
+      boxShadow: isDragging.value ? '0 8px 25px rgba(0, 0, 0, 0.2)' : '0 4px 15px rgba(0, 0, 0, 0.15)'
     }
   } else {
-    // 正常显示状态
+    // 桌面端：正常拖动模式
     return {
       ...baseStyle,
       left: `${position.value.x}px`,
-      transition: isDragging.value ? 'none' : (isMobile.value ? 'left 0.3s ease' : 'none')
+      transition: isDragging.value ? 'none' : 'none'
     }
   }
 })
@@ -427,27 +426,7 @@ const handleProgressClick = (e: MouseEvent) => {
   audioRef.value.currentTime = newProgress * audioRef.value.duration
 }
 
-// 移动端进度条点击处理
-const handleMobileProgressClick = (e: MouseEvent | TouchEvent) => {
-  e.stopPropagation() // 阻止事件冒泡到播放器拖拽
-
-  if (!audioRef.value || !audioRef.value.duration) return
-
-  const progressControl = e.currentTarget as HTMLElement
-  const rect = progressControl.getBoundingClientRect()
-
-  // 获取点击位置（支持触摸事件）
-  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
-
-  // 移动端竖直进度条：从下往上，Y轴计算
-  const percentage = (rect.bottom - clientY) / rect.height
-
-  // 限制最大进度为99%，留出1%的空间防止直接触发结束
-  const newProgress = Math.max(0, Math.min(0.99, percentage))
-
-  progress.value = newProgress * 100
-  audioRef.value.currentTime = newProgress * audioRef.value.duration
-}
+// 移动端已移除进度条功能
 
 // 更新播放进度显示
 const updateProgressDisplay = () => {
@@ -1088,7 +1067,7 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   }
 
   // 如果点击的是控制按钮、音量控制区域或进度条，不触发拖动
-  if ((e.target as HTMLElement).closest('.control-btn, .volume-control-vertical, .progress-control')) {
+  if ((e.target as HTMLElement).closest('.control-btn, .volume-control-vertical')) {
     return
   }
 
@@ -1097,8 +1076,11 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
   const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
 
+  // 移动端使用隐藏状态计算偏移，桌面端使用当前位置
+  const currentX = isMobile.value ? (isHidden.value ? SLIDE_OUT_POSITION : SLIDE_IN_POSITION) : position.value.x
+
   dragOffset.value = {
-    x: clientX - position.value.x,
+    x: clientX - currentX,
     y: clientY - position.value.y
   }
 
@@ -1140,15 +1122,29 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
   }
 
   const updatePosition = (newX: number, newY: number) => {
-    // 限制在窗口范围内
-    const playerWidth = isMobile.value ? 60 : 500
-    const playerHeight = isMobile.value ? 400 : 60
-    const maxX = window.innerWidth - playerWidth
-    const maxY = window.innerHeight - playerHeight
+    if (isMobile.value) {
+      // 移动端：只能在X轴侧滑，固定Y轴位置
+      const maxSlideDistance = 100 // 最大滑动距离
+      const centerX = window.innerWidth / 2
+      const slideDistance = Math.max(0, Math.min(maxSlideDistance, centerX - newX))
 
-    position.value = {
-      x: Math.max(0, Math.min(newX, maxX)),
-      y: Math.max(0, Math.min(newY, maxY))
+      // 根据滑动距离决定是否显示
+      if (slideDistance > 50) {
+        isHidden.value = false
+      } else {
+        isHidden.value = true
+      }
+    } else {
+      // 桌面端：正常拖动
+      const playerWidth = 500
+      const playerHeight = 60
+      const maxX = window.innerWidth - playerWidth
+      const maxY = window.innerHeight - playerHeight
+
+      position.value = {
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      }
     }
   }
 
@@ -1355,13 +1351,7 @@ const hidePlayer = () => {
 const showPlayer = () => {
   if (isMobile.value) {
     isHidden.value = false
-    // 3秒后自动隐藏
-    if (hideTimeout.value) {
-      clearTimeout(hideTimeout.value)
-    }
-    hideTimeout.value = setTimeout(() => {
-      hidePlayer()
-    }, 3000)
+    // 移动端不自动隐藏，让用户手动拖回
   }
 }
 
@@ -1370,15 +1360,16 @@ onMounted(async () => {
   // 检测移动设备
   checkMobile()
 
-  // 如果没有保存的位置，设置默认位置到搜索按钮附近
+  // 如果没有保存的位置，设置默认位置
   const saved = localStorage.getItem('musicPlayerPosition')
   if (!saved) {
     // 根据设备类型设置不同的默认位置
     if (isMobile.value) {
-      // 移动端：设置在右下角，播放器宽度60px + 距离右边20px
+      // 移动端：默认隐藏在右侧
+      SLIDE_IN_POSITION = window.innerWidth - 60
       position.value = {
-        x: window.innerWidth - 80,
-        y: window.innerHeight - 420
+        x: SLIDE_IN_POSITION,
+        y: window.innerHeight - 200 // 调整Y轴位置，让组件更矮
       }
     } else {
       // 桌面端：设置位置：搜索按钮的X轴（距离右边50px），创作者信息行的Y轴
@@ -1386,6 +1377,11 @@ onMounted(async () => {
         x: window.innerWidth - 550, // 播放器宽度500px + 距离右边50px
         y: 900 // 创作者信息行的大致Y轴位置
       }
+    }
+  } else {
+    // 如果有保存的位置，更新移动端的SLIDE_IN_POSITION
+    if (isMobile.value) {
+      SLIDE_IN_POSITION = window.innerWidth - 60
     }
   }
 
@@ -1571,19 +1567,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 全局重置移动端进度条相关元素 */
-.mobile-vertical-layout .progress-control,
-.mobile-vertical-layout .progress-control *,
-.mobile-vertical-layout .progress-bar,
-.mobile-vertical-layout .progress-fill {
-  accent-color: #000 !important;
-  color: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  -webkit-appearance: none !important;
-}
+/* 移动端竖向布局已移除进度条功能 */
 
 .music-player {
   position: fixed;
@@ -1635,8 +1619,13 @@ onMounted(async () => {
 /* 移动端边缘隐藏状态 */
 .music-player.mobile-hidden {
   cursor: pointer;
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 0;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform: scale(0.95) !important;
+  opacity: 0.8;
 }
 
 /* 移动端拖动性能优化 */
@@ -1648,19 +1637,27 @@ onMounted(async () => {
   user-select: none;
 }
 
+.music-player.mobile-hidden:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0.9;
+}
+
 .music-player.mobile-hidden .music-controls {
   overflow: hidden;
+  opacity: 0;
+  transform: scale(0.8);
 }
 
 .music-player.mobile-hidden .music-controls::before {
   content: '♪';
   position: absolute;
-  right: 5px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
   z-index: 10;
+  opacity: 1;
 }
 
 .music-controls {
@@ -1690,82 +1687,18 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 10px 5px;
+  justify-content: center;
+  padding: 8px 4px;
   width: 44px;
   height: auto;
-  min-height: 440px;
-  gap: 15px;
+  min-height: 180px; /* 大幅减少高度 */
+  gap: 10px;
   resize: none;
   overflow: hidden;
   flex-wrap: nowrap;
 }
 
-/* 移动端竖向模式的进度条 */
-.mobile-vertical-layout .progress-control {
-  width: 24px;
-  height: 120px;
-  margin: 0;
-  flex-shrink: 0;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  cursor: pointer;
-  border-radius: 3px;
-  overflow: hidden;
-  /* 确保没有浏览器默认的蓝色 */
-  accent-color: #000;
-}
-
-/* 移动端进度条背景 */
-.mobile-vertical-layout .progress-bar {
-  width: 6px;
-  height: 100%;
-  background: #ccc;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
-  /* 重置所有可能的蓝色 */
-  color: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
-}
-
-/* 移动端进度条填充 */
-.mobile-vertical-layout .progress-fill {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #000;
-  border-radius: 3px;
-  transition: height 0.2s ease;
-  /* 重置所有可能的蓝色 */
-  color: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
-}
-
-html.dark .mobile-vertical-layout .progress-bar {
-  background: #666;
-  /* 重置所有可能的蓝色 */
-  color: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
-}
-
-html.dark .mobile-vertical-layout .progress-fill {
-  background: #fff;
-  /* 重置所有可能的蓝色 */
-  color: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
-}
+/* 移动端已移除进度条功能，简洁的按钮布局 */
 
 /* 确保移动端每个控制元素都独占一行 */
 .mobile-vertical-layout > * {
@@ -2209,14 +2142,14 @@ html.dark .playlist-header {
   .music-player.mobile-vertical {
     width: 44px;
     height: auto;
-    min-height: 440px;
+    min-height: 180px;
     resize: none;
   }
 
   .mobile-vertical-layout {
     width: 44px;
     height: auto;
-    min-height: 440px;
+    min-height: 180px;
     resize: none;
   }
 
