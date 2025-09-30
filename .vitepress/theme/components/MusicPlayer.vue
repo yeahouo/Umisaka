@@ -777,7 +777,9 @@ const scanMusicFiles = async () => {
 
     // 由于浏览器安全限制，我们无法直接扫描文件系统
     // 这里使用一个智能的策略：先尝试已知的文件，然后动态检测
-    const knownFiles: string[] = []
+    const knownFiles: string[] = [
+      'mikeeysmind - Ethereal.flac'
+    ]
 
     // 过滤出存在的文件（基于已知列表）
     musicFiles = knownFiles
