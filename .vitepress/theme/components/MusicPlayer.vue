@@ -1384,7 +1384,6 @@ onMounted(async () => {
     }, 5000) // 5秒后自动隐藏
   }
 })
-})
 </script>
 
 <style scoped>
