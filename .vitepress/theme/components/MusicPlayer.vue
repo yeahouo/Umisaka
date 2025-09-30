@@ -330,14 +330,14 @@ const playerStyle = computed(() => {
     return {
       ...baseStyle,
       left: `${-40}px`, // 只显示20px的边缘（移动端播放器宽度60px）
-      transition: 'left 0.3s ease'
+      transition: isDragging.value ? 'none' : 'left 0.3s ease'
     }
   } else {
     // 正常显示状态
     return {
       ...baseStyle,
       left: `${position.value.x}px`,
-      transition: isMobile.value ? 'left 0.3s ease' : 'none'
+      transition: isDragging.value ? 'none' : (isMobile.value ? 'left 0.3s ease' : 'none')
     }
   }
 })
@@ -1095,7 +1095,11 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
     y: clientY - position.value.y
   }
 
-  let animationId: number
+  // 移动端优化：减少延迟和提升响应性
+  const isTouchEvent = 'touches' in e
+  let animationId: number | null = null
+  let lastUpdateTime = 0
+  const THROTTLE_DELAY = isMobile.value ? 8 : 16 // 移动端更短的节流延迟
 
   const handleDrag = (moveEvent: MouseEvent | TouchEvent) => {
     if (!isDragging.value) return
@@ -1106,23 +1110,39 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
     const newX = moveClientX - dragOffset.value.x
     const newY = moveClientY - dragOffset.value.y
 
-    // 使用 requestAnimationFrame 优化性能
-    if (animationId) {
-      cancelAnimationFrame(animationId)
-    }
-
-    animationId = requestAnimationFrame(() => {
-      // 限制在窗口范围内
-      const playerWidth = isMobile.value ? 60 : 500
-      const playerHeight = isMobile.value ? 400 : 60
-      const maxX = window.innerWidth - playerWidth
-      const maxY = window.innerHeight - playerHeight
-
-      position.value = {
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
+    // 移动端直接更新，桌面端使用节流
+    if (isMobile.value) {
+      // 移动端：直接更新，减少延迟
+      updatePosition(newX, newY)
+    } else {
+      // 桌面端：使用节流优化性能
+      const now = Date.now()
+      if (now - lastUpdateTime >= THROTTLE_DELAY) {
+        updatePosition(newX, newY)
+        lastUpdateTime = now
+      } else {
+        // 使用 requestAnimationFrame 确保至少一帧更新一次
+        if (!animationId) {
+          animationId = requestAnimationFrame(() => {
+            updatePosition(newX, newY)
+            animationId = null
+          })
+        }
       }
-    })
+    }
+  }
+
+  const updatePosition = (newX: number, newY: number) => {
+    // 限制在窗口范围内
+    const playerWidth = isMobile.value ? 60 : 500
+    const playerHeight = isMobile.value ? 400 : 60
+    const maxX = window.innerWidth - playerWidth
+    const maxY = window.innerHeight - playerHeight
+
+    position.value = {
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    }
   }
 
   const stopDrag = () => {
@@ -1135,9 +1155,10 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
     }
   }
 
+  // 移动端使用 passive: true 提升滚动性能
   document.addEventListener('mousemove', handleDrag)
   document.addEventListener('mouseup', stopDrag)
-  document.addEventListener('touchmove', handleDrag, { passive: false })
+  document.addEventListener('touchmove', handleDrag, { passive: isTouchEvent })
   document.addEventListener('touchend', stopDrag)
 
   // 防止拖动时选中文本和页面滚动
@@ -1544,7 +1565,8 @@ onMounted(async () => {
 .music-player.dragging {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   transform: scale(1.05) translateZ(0);
-  transition: box-shadow 0.15s ease, transform 0.08s ease;
+  /* 拖动时禁用transition以提升性能 */
+  transition: none !important;
 }
 
 .music-player:not(.dragging) {
@@ -1569,6 +1591,15 @@ onMounted(async () => {
   cursor: pointer;
   border-right: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 0;
+}
+
+/* 移动端拖动性能优化 */
+.music-player.mobile-vertical.dragging {
+  will-change: transform;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .music-player.mobile-hidden .music-controls {
