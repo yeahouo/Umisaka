@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { VPTeamMembers } from 'vitepress/theme'
-import { creators } from '../../creators'
-import { siteName } from '../../../metadata'
-import { ref, onMounted, onUnmounted } from 'vue'
+import {VPTeamMembers} from 'vitepress/theme'
+import {creators} from '../../creators'
+import {siteName} from '../../../metadata'
+import {onMounted, onUnmounted, ref} from 'vue'
 
 // 响应式状态
 const isMobile = ref(false)
@@ -38,12 +38,12 @@ onUnmounted(() => {
 
           <!-- 桌面端使用原来的small配置 -->
           <div v-if="!isMobile" w-full p-10>
-            <VPTeamMembers size="small" :members="creators" flex justify-center />
+            <VPTeamMembers size="small" :members="creators" flex justify-center/>
           </div>
 
           <!-- 手机端使用medium配置实现更好的居中效果 -->
           <div v-else class="mobile-team-container">
-            <VPTeamMembers size="medium" :members="creators" />
+            <VPTeamMembers size="medium" :members="creators"/>
           </div>
         </div>
       </main>
@@ -74,8 +74,8 @@ onUnmounted(() => {
 /* 小屏幕手机进一步调整 */
 @media (max-width: 480px) {
   .mobile-team-container {
-    position: relative;
-    right: -2.5rem; /* 向右偏移 */
+    padding-right: 0;
+    margin-right: -2.5rem; /* 负值会向右延伸 */
   }
 }
 </style>
