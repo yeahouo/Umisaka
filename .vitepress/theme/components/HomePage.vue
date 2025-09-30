@@ -74,7 +74,7 @@ onUnmounted(() => {
 /* 小屏幕手机进一步调整 */
 @media (max-width: 480px) {
   .mobile-team-container {
-    padding-right: 1.5rem; /* 小屏幕保持适当右侧间距 */
+    padding-right: 4.5rem; /* 小屏幕保持适当右侧间距 */
   }
 }
 </style>
