@@ -25,6 +25,38 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Optimize build for better performance
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Split vendor code
+          if (id.includes('node_modules/vue') || id.includes('node_modules/@vue')) {
+            return 'vendor'
+          }
+          // Split Nolebase plugins
+          if (id.includes('@nolebase')) {
+            return 'plugins'
+          }
+          // Split heavy components
+          if (id.includes('VideoBackground.vue') || id.includes('MusicPlayer.vue')) {
+            return 'media'
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
+  vite: {
+    build: {
+      // Enable compression for better performance (using built-in esbuild)
+      minify: 'esbuild',
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: ['vue'],
+    },
+  },
   lang: 'en-US',
   title: siteName,
   description: siteDescription,
