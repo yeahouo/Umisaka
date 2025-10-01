@@ -107,13 +107,11 @@ const syncVideoWithTheme = () => {
   }
 }
 
-// 监听isDark变化 - 主要监听方式
+// 监听isDark变化
 watch(() => isDark.value, (newVal) => {
   // console.log('isDark changed:', newVal)
-  // 部署环境需要更长的延迟
-  const delay = import.meta.env.PROD ? 200 : 100
-  setTimeout(syncVideoWithTheme, delay)
-}, { immediate: true }) // 添加immediate确保初始化时执行
+  setTimeout(syncVideoWithTheme, 50)
+})
 
 // 监听路由变化
 watch(() => route.path, () => {
@@ -160,20 +158,8 @@ onMounted(() => {
   attemptVideoPlay(lightVideoRef.value, 'Light')
   attemptVideoPlay(darkVideoRef.value, 'Dark')
 
-  // 部署环境需要更长的延迟来确保主题设置完全加载
-  const syncDelay = import.meta.env.PROD ? 500 : 200
-
-  // 延迟初始同步主题
-  setTimeout(() => {
-    syncVideoWithTheme()
-
-    // 部署环境下再次同步以确保完全正确
-    if (import.meta.env.PROD) {
-      setTimeout(() => {
-        syncVideoWithTheme()
-      }, 300)
-    }
-  }, syncDelay)
+  // 初始同步主题
+  syncVideoWithTheme()
 
   // 监听主题变化
   const observer = new MutationObserver((mutations) => {
@@ -193,9 +179,7 @@ onMounted(() => {
   // 监听storage变化（主题偏好变化）
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === 'vitepress-theme-appearance') {
-      // 部署环境需要更长的延迟
-      const delay = import.meta.env.PROD ? 300 : 200
-      setTimeout(syncVideoWithTheme, delay) // 延迟确保DOM已更新
+      setTimeout(syncVideoWithTheme, 100) // 延迟确保DOM已更新
     }
   }
 
