@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
 
 const lightVideoRef = ref<HTMLVideoElement>()
@@ -77,6 +77,33 @@ const showLightVideo = computed(() => {
 // 判断是否显示暗色模式视频背景
 const showDarkVideo = computed(() => {
   return route.path === '/' && isDark.value
+})
+
+// 监听主题变化并同步视频背景
+const syncVideoWithTheme = () => {
+  const html = document.documentElement
+  const isDarkMode = html.classList.contains('dark')
+
+  // 确保视频背景与当前主题同步
+  if (route.path === '/') {
+    console.log('Syncing video with theme:', isDarkMode ? 'dark' : 'light')
+
+    // 强制重新计算computed属性
+    void showLightVideo.value
+    void showDarkVideo.value
+  }
+}
+
+// 监听isDark变化
+watch(() => isDark.value, (newVal) => {
+  console.log('isDark changed:', newVal)
+  // 延迟同步确保主题切换完成
+  setTimeout(syncVideoWithTheme, 50)
+})
+
+// 监听路由变化
+watch(() => route.path, () => {
+  setTimeout(syncVideoWithTheme, 50)
 })
 
 const onVideoLoaded = () => {
@@ -115,8 +142,42 @@ onMounted(() => {
     })
   }
 
+  // 初始播放视频
   attemptVideoPlay(lightVideoRef.value, 'Light')
   attemptVideoPlay(darkVideoRef.value, 'Dark')
+
+  // 初始同步主题
+  syncVideoWithTheme()
+
+  // 监听主题变化
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        syncVideoWithTheme()
+      }
+    })
+  })
+
+  // 监听HTML元素类变化
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+
+  // 监听storage变化（主题偏好变化）
+  const handleStorageChange = (e: StorageEvent) => {
+    if (e.key === 'vitepress-theme-appearance') {
+      setTimeout(syncVideoWithTheme, 100) // 延迟确保DOM已更新
+    }
+  }
+
+  window.addEventListener('storage', handleStorageChange)
+
+  // 清理函数
+  return () => {
+    observer.disconnect()
+    window.removeEventListener('storage', handleStorageChange)
+  }
 })
 </script>
 
