@@ -201,7 +201,7 @@ const ExtendedTheme: Theme = {
             clearTimeout(themeChangeTimeout);
           }
           themeChangeTimeout = setTimeout(() => {
-            setDefaultThemeBasedOnTime();
+            setDefaultThemeToLight();
           }, 100);
         }
       });

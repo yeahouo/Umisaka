@@ -174,6 +174,7 @@ export default defineConfig({
   themeConfig: {
     outline: { label: 'Outline', level: 'deep' },
     darkModeSwitchLabel: 'Toggle Theme',
+    appearance: 'light', // 强制默认主题为日间模式
     editLink: {
       pattern: `${githubRepoLink}/tree/main/:path`,
       text: 'Edit this page',
