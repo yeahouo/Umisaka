@@ -164,12 +164,13 @@ const ExtendedTheme: Theme = {
     const setDefaultThemeToLight = () => {
       // Check if we're in a browser environment
       if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
+        const html = document.documentElement;
+
         // Check if user has manually set theme preference
         const userPreference = localStorage.getItem('vitepress-theme-appearance');
 
         // Only set default if user hasn't manually chosen
         if (userPreference === null) {
-          const html = document.documentElement;
           // Ensure light mode is set
           html.classList.remove('dark');
 
@@ -178,12 +179,39 @@ const ExtendedTheme: Theme = {
 
           // Force a reflow to ensure theme is properly applied
           void html.offsetHeight;
+        } else {
+          // If user has set preference, ensure the DOM reflects it
+          if (userPreference === 'light') {
+            html.classList.remove('dark');
+          } else if (userPreference === 'dark') {
+            html.classList.add('dark');
+          }
         }
+
+        // Set initial state for theme toggle button
+        const isDarkMode = html.classList.contains('dark');
+        localStorage.setItem('vitepress-theme-appearance', isDarkMode ? 'dark' : 'light');
       }
     };
 
-    // Set default theme on initial load
+    // Set default theme on initial load and on client-side navigation
     setDefaultThemeToLight();
+
+    // Add event listener for theme changes in other tabs
+    if (typeof window !== 'undefined') {
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === 'vitepress-theme-appearance') {
+          setDefaultThemeToLight();
+        }
+      };
+
+      window.addEventListener('storage', handleStorageChange);
+
+      // Cleanup on unmount
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    }
 
     // Obtain configuration from: https://giscus.app/
     giscusTalk({
