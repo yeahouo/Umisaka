@@ -79,43 +79,9 @@ const showDarkVideo = computed(() => {
   return route.path === '/' && isDark.value
 })
 
-// 监听主题变化并同步视频背景
-const syncVideoWithTheme = () => {
-  const html = document.documentElement
-  const isDarkMode = html.classList.contains('dark')
-
-  // 确保视频背景与当前主题同步
-  if (route.path === '/') {
-    // console.log('Syncing video with theme:', isDarkMode ? 'dark' : 'light')
-
-    // 强制触发Vue响应式更新
-    void showLightVideo.value
-    void showDarkVideo.value
-
-    // 确保视频播放状态正确
-    setTimeout(() => {
-      if (isDarkMode && darkVideoRef.value) {
-        darkVideoRef.value.play().catch(e => {
-          // console.log('Dark video play failed:', e)
-        })
-      } else if (!isDarkMode && lightVideoRef.value) {
-        lightVideoRef.value.play().catch(e => {
-          // console.log('Light video play failed:', e)
-        })
-      }
-    }, 50)
-  }
-}
-
-// 监听isDark变化
-watch(() => isDark.value, (newVal) => {
-  // console.log('isDark changed:', newVal)
-  setTimeout(syncVideoWithTheme, 50)
-})
-
-// 监听路由变化
+// 监听路由变化（简单监听）
 watch(() => route.path, () => {
-  setTimeout(syncVideoWithTheme, 50)
+  // 仅在路由变化时触发，确保首页正确显示视频
 })
 
 const onVideoLoaded = () => {
@@ -157,39 +123,6 @@ onMounted(() => {
   // 初始播放视频
   attemptVideoPlay(lightVideoRef.value, 'Light')
   attemptVideoPlay(darkVideoRef.value, 'Dark')
-
-  // 初始同步主题
-  syncVideoWithTheme()
-
-  // 监听主题变化
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        syncVideoWithTheme()
-      }
-    })
-  })
-
-  // 监听HTML元素类变化
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['class']
-  })
-
-  // 监听storage变化（主题偏好变化）
-  const handleStorageChange = (e: StorageEvent) => {
-    if (e.key === 'vitepress-theme-appearance') {
-      setTimeout(syncVideoWithTheme, 100) // 延迟确保DOM已更新
-    }
-  }
-
-  window.addEventListener('storage', handleStorageChange)
-
-  // 清理函数
-  return () => {
-    observer.disconnect()
-    window.removeEventListener('storage', handleStorageChange)
-  }
 })
 </script>
 
