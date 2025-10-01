@@ -160,8 +160,8 @@ const ExtendedTheme: Theme = {
     const { frontmatter } = toRefs(useData());
     const route = useRoute();
 
-    // Set default theme based on local time (only if user hasn't manually set preference)
-    const setDefaultThemeBasedOnTime = () => {
+    // Set default theme to light mode (only if user hasn't manually set preference)
+    const setDefaultThemeToLight = () => {
       // Check if we're in a browser environment
       if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
         // Check if user has manually set theme preference
@@ -169,22 +169,13 @@ const ExtendedTheme: Theme = {
 
         // Only set default if user hasn't manually chosen
         if (userPreference === null) {
-          const now = new Date();
-          const hours = now.getHours();
-
-          // Day mode: 6:00 - 18:00 (6 AM to 6 PM local time)
-          // Night mode: 18:00 - 6:00 (6 PM to 6 AM local time)
-          const isDayTime = hours >= 6 && hours < 18;
-
           const html = document.documentElement;
+
           // Force a clean theme switch to avoid mixing
           html.classList.remove('dark');
-          if (!isDayTime) {
-            html.classList.add('dark');
-          }
 
-          // Store the preference
-          localStorage.setItem('vitepress-theme-appearance', isDayTime ? 'light' : 'dark');
+          // Store the preference as light
+          localStorage.setItem('vitepress-theme-appearance', 'light');
 
           // Force a reflow to ensure theme is properly applied
           void html.offsetHeight;
@@ -193,7 +184,7 @@ const ExtendedTheme: Theme = {
     };
 
     // Set default theme on initial load
-    setDefaultThemeBasedOnTime();
+    setDefaultThemeToLight();
 
     // Listen for system theme changes to avoid conflicts
     if (typeof window !== 'undefined') {
@@ -220,7 +211,7 @@ const ExtendedTheme: Theme = {
       repoId: 'R_kgDOL5WHsg',
       category: 'Announcements', // default: `General`
       categoryId: 'DIC_kwDOL5WHss4CfTYs',
-      mapping: 'url', // default: `pathname`
+      mapping: 'pathname', // default: `pathname`
       inputPosition: 'top', // default: `top`
       lang: 'en', // default: `zh-CN`
       reactionsEnabled: false, // 禁用反应功能
