@@ -71,7 +71,9 @@
       "Bash(for:*)",
       "Bash(do echo:*)",
       "Bash(head:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "additionalDirectories": [
