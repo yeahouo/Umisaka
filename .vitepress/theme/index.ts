@@ -162,26 +162,20 @@ const ExtendedTheme: Theme = {
     const { frontmatter } = toRefs(useData());
     const route = useRoute();
 
-    // Set default theme to light mode (only if user hasn't manually set preference)
+    // Set default theme to light mode (force on page refresh)
     const setDefaultThemeToLight = () => {
       // Check if we're in a browser environment
       if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
-        // Check if user has manually set theme preference
-        const userPreference = localStorage.getItem('vitepress-theme-appearance');
+        const html = document.documentElement;
 
-        // Only set default if user hasn't manually chosen
-        if (userPreference === null) {
-          const html = document.documentElement;
+        // Always force light mode on page load
+        html.classList.remove('dark');
 
-          // Force a clean theme switch to avoid mixing
-          html.classList.remove('dark');
+        // Always set preference to light on page load
+        localStorage.setItem('vitepress-theme-appearance', 'light');
 
-          // Store the preference as light
-          localStorage.setItem('vitepress-theme-appearance', 'light');
-
-          // Force a reflow to ensure theme is properly applied
-          void html.offsetHeight;
-        }
+        // Force a reflow to ensure theme is properly applied
+        void html.offsetHeight;
       }
     };
 
