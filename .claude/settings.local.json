@@ -67,7 +67,11 @@
       "Bash(git diff:*)",
       "Bash(git reset:*)",
       "Bash(git rebase:*)",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(for:*)",
+      "Bash(do echo:*)",
+      "Bash(head:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "additionalDirectories": [
