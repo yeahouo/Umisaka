@@ -160,57 +160,58 @@ const ExtendedTheme: Theme = {
     const { frontmatter } = toRefs(useData());
     const route = useRoute();
 
-    // Set default theme to light mode (only if user hasn't manually set preference)
-    const setDefaultThemeToLight = () => {
+    // Set default theme based on local time (only if user hasn't manually set preference)
+    const setDefaultThemeBasedOnTime = () => {
       // Check if we're in a browser environment
       if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
-        const html = document.documentElement;
-
         // Check if user has manually set theme preference
         const userPreference = localStorage.getItem('vitepress-theme-appearance');
 
         // Only set default if user hasn't manually chosen
         if (userPreference === null) {
-          // Ensure light mode is set
-          html.classList.remove('dark');
+          const now = new Date();
+          const hours = now.getHours();
 
-          // Store the preference as light
-          localStorage.setItem('vitepress-theme-appearance', 'light');
+          // Day mode: 6:00 - 18:00 (6 AM to 6 PM local time)
+          // Night mode: 18:00 - 6:00 (6 PM to 6 AM local time)
+          const isDayTime = hours >= 6 && hours < 18;
+
+          const html = document.documentElement;
+          // Force a clean theme switch to avoid mixing
+          html.classList.remove('dark');
+          if (!isDayTime) {
+            html.classList.add('dark');
+          }
+
+          // Store the preference
+          localStorage.setItem('vitepress-theme-appearance', isDayTime ? 'light' : 'dark');
 
           // Force a reflow to ensure theme is properly applied
           void html.offsetHeight;
-        } else {
-          // If user has set preference, ensure the DOM reflects it
-          if (userPreference === 'light') {
-            html.classList.remove('dark');
-          } else if (userPreference === 'dark') {
-            html.classList.add('dark');
-          }
         }
-
-        // Set initial state for theme toggle button
-        const isDarkMode = html.classList.contains('dark');
-        localStorage.setItem('vitepress-theme-appearance', isDarkMode ? 'dark' : 'light');
       }
     };
 
-    // Set default theme on initial load and on client-side navigation
-    setDefaultThemeToLight();
+    // Set default theme on initial load
+    setDefaultThemeBasedOnTime();
 
-    // Add event listener for theme changes in other tabs
+    // Listen for system theme changes to avoid conflicts
     if (typeof window !== 'undefined') {
-      const handleStorageChange = (e: StorageEvent) => {
-        if (e.key === 'vitepress-theme-appearance') {
-          setDefaultThemeToLight();
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      let themeChangeTimeout: NodeJS.Timeout | null = null;
+
+      mediaQuery.addEventListener('change', () => {
+        // Only respond if user hasn't set a preference
+        if (localStorage.getItem('vitepress-theme-appearance') === null) {
+          // Debounce theme changes to avoid rapid switching
+          if (themeChangeTimeout) {
+            clearTimeout(themeChangeTimeout);
+          }
+          themeChangeTimeout = setTimeout(() => {
+            setDefaultThemeBasedOnTime();
+          }, 100);
         }
-      };
-
-      window.addEventListener('storage', handleStorageChange);
-
-      // Cleanup on unmount
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-      };
+      });
     }
 
     // Obtain configuration from: https://giscus.app/
