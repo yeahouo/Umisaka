@@ -1,0 +1,184 @@
+/* 评论区域样式 */
+.vp-doc .giscus,
+.vp-doc .giscus-frame {
+  margin-top: 48px;
+  margin-bottom: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 评论框容器样式 */
+.giscus {
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  transition: all 0.3s ease;
+}
+
+/* 评论框边框和阴影 */
+.giscus-frame {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* 暗色模式评论框样式 */
+html.dark .giscus {
+  background: var(--vp-c-bg);
+  border-color: var(--vp-c-divider);
+}
+
+html.dark .giscus-frame {
+  border-color: var(--vp-c-divider);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 评论区域标题样式 */
+.vp-doc .giscus-widget .giscus-header {
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+  border-radius: 8px 8px 0 0;
+  padding: 16px 20px;
+  font-family: var(--vp-font-family-base);
+}
+
+/* 评论输入框样式 */
+.giscus .giscus-input {
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  color: var(--vp-c-text-1);
+  font-family: var(--vp-font-family-base);
+  transition: all 0.2s ease;
+}
+
+.giscus .giscus-input:focus {
+  border-color: var(--vp-c-brand);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--vp-c-brand-rgb), 0.2);
+}
+
+/* 评论按钮样式 */
+.giscus .giscus-button {
+  background: var(--vp-c-brand);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-family: var(--vp-font-family-base);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.giscus .giscus-button:hover {
+  background: var(--vp-c-brand-dark);
+  transform: translateY(-1px);
+}
+
+.giscus .giscus-button:active {
+  transform: translateY(0);
+}
+
+/* 评论列表样式 */
+.giscus .giscus-comment {
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.giscus .giscus-comment:hover {
+  border-color: var(--vp-c-brand);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 评论回复样式 */
+.giscus .giscus-reply {
+  background: var(--vp-c-bg-soft);
+  border-left: 3px solid var(--vp-c-brand);
+  margin-left: 20px;
+}
+
+/* 评论用户名样式 */
+.giscus .giscus-user {
+  color: var(--vp-c-brand);
+  font-weight: 600;
+  font-family: var(--vp-font-family-base);
+  text-decoration: none;
+}
+
+.giscus .giscus-user:hover {
+  text-decoration: underline;
+}
+
+/* 评论时间样式 */
+.giscus .giscus-time {
+  color: var(--vp-c-text-3);
+  font-family: var(--vp-font-family-base);
+  font-size: 0.9em;
+}
+
+/* 评论内容样式 */
+.giscus .giscus-comment-text {
+  color: var(--vp-c-text-1);
+  font-family: var(--vp-font-family-base);
+  line-height: 1.6;
+}
+
+/* 加载状态样式 */
+.giscus .giscus-loading {
+  color: var(--vp-c-text-3);
+  font-family: var(--vp-font-family-base);
+  font-style: italic;
+}
+
+/* 错误信息样式 */
+.giscus .giscus-error {
+  color: var(--vp-c-danger);
+  font-family: var(--vp-font-family-base);
+  background: rgba(var(--vp-c-danger-rgb), 0.1);
+  border: 1px solid var(--vp-c-danger);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+/* 响应式评论区域 */
+@media (max-width: 768px) {
+  .vp-doc .giscus,
+  .vp-doc .giscus-frame {
+    margin-top: 32px;
+    margin-bottom: 24px;
+  }
+
+  .giscus .giscus-reply {
+    margin-left: 12px;
+  }
+}
+
+/* 评论区域分隔线 */
+.vp-doc .comment-section-divider {
+  border-top: 2px solid var(--vp-c-divider);
+  margin: 48px 0 32px;
+  position: relative;
+}
+
+.vp-doc .comment-section-divider::after {
+  content: '💬 评论';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--vp-c-bg);
+  padding: 0 16px;
+  color: var(--vp-c-text-2);
+  font-size: 0.9em;
+  font-family: var(--vp-font-family-base);
+}
+
+/* 暗色模式分隔线 */
+html.dark .vp-doc .comment-section-divider::after {
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+}
