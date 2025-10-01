@@ -162,44 +162,35 @@ const ExtendedTheme: Theme = {
     const { frontmatter } = toRefs(useData());
     const route = useRoute();
 
-    // Set default theme to light mode (force on page refresh)
-    const setDefaultThemeToLight = () => {
-      // Check if we're in a browser environment
-      if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
+    // 主题初始化，强制日间模式并阻止浏览器自动切换
+    const initializeTheme = () => {
+      if (typeof document !== 'undefined') {
         const html = document.documentElement;
 
-        // Always force light mode on page load
+        // 强制移除暗色模式类
         html.classList.remove('dark');
 
-        // Always set preference to light on page load
-        localStorage.setItem('vitepress-theme-appearance', 'light');
+        // 强制设置 light 类，确保日间模式
+        html.classList.add('light');
 
-        // Force a reflow to ensure theme is properly applied
-        void html.offsetHeight;
+        // 移除可能存在的媒体查询监听器，阻止浏览器自动切换
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        if (mediaQuery.removeEventListener) {
+          // 移除现有的监听器（如果存在）
+          mediaQuery.removeEventListener('change', () => {});
+        }
+
+        // 覆盖 CSS 变量，确保日间模式样式
+        html.style.setProperty('color-scheme', 'light');
+        html.style.setProperty('forced-color-adjust', 'none');
       }
     };
 
-    // Set default theme on initial load
-    setDefaultThemeToLight();
+    // 初始化主题
+    initializeTheme();
 
-    // Listen for system theme changes to avoid conflicts
-    if (typeof window !== 'undefined') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      let themeChangeTimeout: NodeJS.Timeout | null = null;
-
-      mediaQuery.addEventListener('change', () => {
-        // Only respond if user hasn't set a preference
-        if (localStorage.getItem('vitepress-theme-appearance') === null) {
-          // Debounce theme changes to avoid rapid switching
-          if (themeChangeTimeout) {
-            clearTimeout(themeChangeTimeout);
-          }
-          themeChangeTimeout = setTimeout(() => {
-            setDefaultThemeToLight();
-          }, 100);
-        }
-      });
-    }
+    // 移除系统主题监听，避免浏览器自动切换干扰
+    // appearance: 'light' 配置会阻止浏览器自动切换
 
     // Obtain configuration from: https://giscus.app/
     giscusTalk({
