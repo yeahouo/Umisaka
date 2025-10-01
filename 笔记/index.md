@@ -6,7 +6,7 @@ comment: true
 
 <br><br><br>
 <div class="image-container">
-<img src="/image/02862783750FA845A57A2457C7F93D4E.gif" alt="随笔" style="display: block;margin: auto;width: 500px;height:auto" title="miltina">
+<img src="/public/image/02862783750FA845A57A2457C7F93D4E.gif" alt="随笔" style="display: block;margin: auto;width: 500px;height:auto" title="miltina">
 <p class="caption" style="text-align: center;font-size: xx-small" >我想给自己留一片空间,所以就有了这里,怎么称呼我都行(笑)</p>
 </div>
 
