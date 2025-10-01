@@ -370,7 +370,7 @@ const togglePlay = () => {
       audioRef.value.pause()
     } else {
       audioRef.value.play().catch(e => {
-        console.log('Audio play failed:', e)
+        // console.log('Audio play failed:', e)
       })
     }
   }
@@ -541,7 +541,7 @@ const onPause = () => {
 }
 
 const onError = (e: Event) => {
-  console.log('Audio error:', e)
+  // console.log('Audio error:', e)
   isPlaying.value = false
 }
 
@@ -580,9 +580,9 @@ const handlePlaylistTouchEnd = () => {
 // 播放列表相关函数
 const togglePlaylist = () => {
   showPlaylist.value = !showPlaylist.value
-  console.log('Playlist toggled:', showPlaylist.value)
-  console.log('Music list length:', musicList.value.length)
-  console.log('Music list:', musicList.value)
+  // console.log('Playlist toggled:', showPlaylist.value)
+  // console.log('Music list length:', musicList.value.length)
+  // console.log('Music list:', musicList.value)
 
   // 当显示播放列表时，触发列表项动画
   if (showPlaylist.value) {
@@ -664,7 +664,7 @@ const onEnded = () => {
           audioRef.value.play().then(() => {
             isPlaying.value = true
           }).catch(e => {
-            console.log('Audio play failed:', e)
+            // console.log('Audio play failed:', e)
             isPlaying.value = false
           })
           willPlayNext = true
@@ -879,7 +879,7 @@ const playMusic = (music: {name: string, size: number}) => {
       // 添加播放成功的视觉反馈
       updatePlaylistItemVisualFeedback(music.name)
     }).catch(e => {
-      console.log('Audio play failed:', e)
+      // console.log('Audio play failed:', e)
       isPlaying.value = false
     })
   }
@@ -978,14 +978,14 @@ const scanMusicFiles = async () => {
     await detectMusicFiles(musicFiles, audioExtensions)
 
     musicList.value = musicFiles
-    console.log('Music files loaded:', musicList.value)
+    // console.log('Music files loaded:', musicList.value)
 
     // 如果当前是随机模式，初始化随机播放列表
     if (playMode.value === 'random') {
       initRandomPlayList()
     }
   } catch (e) {
-    console.log('Failed to scan music files:', e)
+    // console.log('Failed to scan music files:', e)
     musicList.value = []
   }
 }
@@ -1117,7 +1117,7 @@ const savePosition = (pos: { x: number; y: number }) => {
   try {
     localStorage.setItem('musicPlayerPosition', JSON.stringify(pos))
   } catch (e) {
-    console.log('Failed to save position:', e)
+    // console.log('Failed to save position:', e)
   }
 }
 
@@ -1141,7 +1141,7 @@ const loadPosition = () => {
       }
     }
   } catch (e) {
-    console.log('Failed to load position:', e)
+    // console.log('Failed to load position:', e)
   }
 }
 
@@ -1394,7 +1394,7 @@ const handleProgressKeyAdjust = (direction: 'left' | 'right', isRepeat: boolean)
       audioRef.value.play().then(() => {
         audioRef.value!.playbackRate = targetRate
       }).catch(e => {
-        console.log('Audio play failed:', e)
+        // console.log('Audio play failed:', e)
       })
     }
 
@@ -1406,7 +1406,7 @@ const handleProgressKeyAdjust = (direction: 'left' | 'right', isRepeat: boolean)
 
     document.addEventListener('keyup', handleKeyUp)
 
-    console.log('开始快进/快退，方向:', direction, '倍率:', targetRate)
+    // console.log('开始快进/快退，方向:', direction, '倍率:', targetRate)
   }
 
   // 如果是重复按键，更新方向
@@ -1419,7 +1419,7 @@ const handleProgressKeyAdjust = (direction: 'left' | 'right', isRepeat: boolean)
 const finishProgressKeyAdjust = () => {
   if (!isKeyAdjustingProgress.value || !audioRef.value) return
 
-  console.log('结束快进/快退')
+  // console.log('结束快进/快退')
 
   // 恢复原始播放速度
   audioRef.value!.playbackRate = originalPlaybackRate.value
@@ -1529,7 +1529,7 @@ onMounted(async () => {
     const randomIndex = Math.floor(Math.random() * musicList.value.length)
     const selectedMusic = musicList.value[randomIndex]
     currentMusic.value = selectedMusic.name
-    console.log('Set random default music to:', selectedMusic.name)
+    // console.log('Set random default music to:', selectedMusic.name)
 
     // 如果当前是随机模式，初始化随机播放列表
     if (playMode.value === 'random') {
@@ -1584,17 +1584,17 @@ onMounted(async () => {
     // 尝试自动播放
     const attemptPlay = () => {
       audioRef.value?.play().then(() => {
-        console.log('Audio autoplay succeeded')
+        // console.log('Audio autoplay succeeded')
         isPlaying.value = true
       }).catch(e => {
-        console.log('Audio autoplay failed:', e)
+        // console.log('Audio autoplay failed:', e)
 
         // 策略1: 先静音播放，然后取消静音
         if (audioRef.value) {
           const originalVolume = audioRef.value.volume
           audioRef.value.volume = 0 // 静音
           audioRef.value.play().then(() => {
-            console.log('Audio autoplay succeeded with mute strategy')
+            // console.log('Audio autoplay succeeded with mute strategy')
             isPlaying.value = true
 
             // 播放成功后恢复音量
@@ -1604,7 +1604,7 @@ onMounted(async () => {
               }
             }, 100)
           }).catch(() => {
-            console.log('Muted autoplay also failed, waiting for user interaction')
+            // console.log('Muted autoplay also failed, waiting for user interaction')
             setupUserInteractionListener()
           })
         }
@@ -1616,7 +1616,7 @@ onMounted(async () => {
       const tryPlayOnInteraction = () => {
         if (audioRef.value && !isPlaying.value) {
           audioRef.value.play().then(() => {
-            console.log('Audio autoplay succeeded after user interaction')
+            // console.log('Audio autoplay succeeded after user interaction')
             isPlaying.value = true
             // 用户交互后，重新设置音量来"唤醒"音频
             const currentVolume = audioRef.value.volume
@@ -1627,7 +1627,7 @@ onMounted(async () => {
               }
             }, 50)
           }).catch(() => {
-            console.log('Audio play failed after user interaction')
+            // console.log('Audio play failed after user interaction')
           })
         }
         // 移除所有事件监听器
