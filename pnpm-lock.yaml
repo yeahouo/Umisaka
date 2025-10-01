@@ -11,6 +11,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^2.12.2
         version: 2.17.0(@unocss/eslint-plugin@0.58.9(eslint@8.57.0)(typescript@5.4.5))(@vue/compiler-sfc@3.4.27)(eslint@8.57.0)(typescript@5.4.5)
+      '@iconify-json/carbon':
+        specifier: ^1.2.13
+        version: 1.2.13
       '@iconify-json/eos-icons':
         specifier: ^1.1.10
         version: 1.1.10
@@ -635,8 +638,8 @@ packages:
   '@humanwhocodes/object-schema@2.0.3':
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
 
-  '@iconify-json/carbon@1.1.32':
-    resolution: {integrity: sha512-9X8wVI7AmcnjTyOdDoCgyNwcFL9lb++nacDS2yLANTc27F4y9Q8pJIfUVsakR4KcGqSSBCyXwEmBDeopeTZFqA==}
+  '@iconify-json/carbon@1.2.13':
+    resolution: {integrity: sha512-vXrFFKkfYaZSwf4WfnRQJQMnpEzxlPlupwZZlS1WvOAuNnWahsUudHycaMpoBzDqBfniH4KQ2b5qnw0VMKoJug==}
 
   '@iconify-json/eos-icons@1.1.10':
     resolution: {integrity: sha512-sLkaMSrzHgATDFpVYs3/ymeNxR8CtkZCh1Ds9fYxjfhNmXArofbWhHwANqM4Sw9XNbMJq/Z5yxJ5BPTYqjhRcA==}
@@ -4161,7 +4164,7 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@iconify-json/carbon@1.1.32':
+  '@iconify-json/carbon@1.2.13':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -4341,7 +4344,7 @@ snapshots:
 
   '@nolebase/vitepress-plugin-enhanced-readabilities@2.0.0-rc11(vitepress@1.1.4(@algolia/client-search@4.23.3)(@types/node@20.12.11)(less@4.2.0)(markdown-it-mathjax3@4.3.2)(postcss@8.4.38)(search-insights@2.13.0)(typescript@5.4.5))(vue@3.4.27(typescript@5.4.5))':
     dependencies:
-      '@iconify-json/carbon': 1.1.32
+      '@iconify-json/carbon': 1.2.13
       '@iconify-json/icon-park-outline': 1.1.15
       '@nolebase/ui': 2.0.0-rc12(vitepress@1.1.4(@algolia/client-search@4.23.3)(@types/node@20.12.11)(less@4.2.0)(markdown-it-mathjax3@4.3.2)(postcss@8.4.38)(search-insights@2.13.0)(typescript@5.4.5))(vue@3.4.27(typescript@5.4.5))
       less: 4.2.0
