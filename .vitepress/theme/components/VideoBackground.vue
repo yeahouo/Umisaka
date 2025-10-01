@@ -86,20 +86,34 @@ const syncVideoWithTheme = () => {
 
   // 确保视频背景与当前主题同步
   if (route.path === '/') {
-    console.log('Syncing video with theme:', isDarkMode ? 'dark' : 'light')
+    // console.log('Syncing video with theme:', isDarkMode ? 'dark' : 'light')
 
-    // 强制重新计算computed属性
+    // 强制触发Vue响应式更新
     void showLightVideo.value
     void showDarkVideo.value
+
+    // 确保视频播放状态正确
+    setTimeout(() => {
+      if (isDarkMode && darkVideoRef.value) {
+        darkVideoRef.value.play().catch(e => {
+          // console.log('Dark video play failed:', e)
+        })
+      } else if (!isDarkMode && lightVideoRef.value) {
+        lightVideoRef.value.play().catch(e => {
+          // console.log('Light video play failed:', e)
+        })
+      }
+    }, 50)
   }
 }
 
-// 监听isDark变化
+// 监听isDark变化 - 主要监听方式
 watch(() => isDark.value, (newVal) => {
-  console.log('isDark changed:', newVal)
-  // 延迟同步确保主题切换完成
-  setTimeout(syncVideoWithTheme, 50)
-})
+  // console.log('isDark changed:', newVal)
+  // 部署环境需要更长的延迟
+  const delay = import.meta.env.PROD ? 200 : 100
+  setTimeout(syncVideoWithTheme, delay)
+}, { immediate: true }) // 添加immediate确保初始化时执行
 
 // 监听路由变化
 watch(() => route.path, () => {
@@ -130,14 +144,14 @@ onMounted(() => {
     if (!videoRef) return
 
     videoRef.play().catch(e => {
-      console.log(`${videoName} video autoplay failed:`, e)
+      // console.log(`${videoName} video autoplay failed:`, e)
 
       // 移动端策略：确保静音并重试播放
       videoRef.muted = true
       videoRef.play().then(() => {
-        console.log(`${videoName} video autoplay succeeded with mute`)
+        // console.log(`${videoName} video autoplay succeeded with mute`)
       }).catch(() => {
-        console.log(`${videoName} video muted autoplay also failed`)
+        // console.log(`${videoName} video muted autoplay also failed`)
       })
     })
   }
@@ -146,8 +160,20 @@ onMounted(() => {
   attemptVideoPlay(lightVideoRef.value, 'Light')
   attemptVideoPlay(darkVideoRef.value, 'Dark')
 
-  // 初始同步主题
-  syncVideoWithTheme()
+  // 部署环境需要更长的延迟来确保主题设置完全加载
+  const syncDelay = import.meta.env.PROD ? 500 : 200
+
+  // 延迟初始同步主题
+  setTimeout(() => {
+    syncVideoWithTheme()
+
+    // 部署环境下再次同步以确保完全正确
+    if (import.meta.env.PROD) {
+      setTimeout(() => {
+        syncVideoWithTheme()
+      }, 300)
+    }
+  }, syncDelay)
 
   // 监听主题变化
   const observer = new MutationObserver((mutations) => {
@@ -167,7 +193,9 @@ onMounted(() => {
   // 监听storage变化（主题偏好变化）
   const handleStorageChange = (e: StorageEvent) => {
     if (e.key === 'vitepress-theme-appearance') {
-      setTimeout(syncVideoWithTheme, 100) // 延迟确保DOM已更新
+      // 部署环境需要更长的延迟
+      const delay = import.meta.env.PROD ? 300 : 200
+      setTimeout(syncVideoWithTheme, delay) // 延迟确保DOM已更新
     }
   }
 
