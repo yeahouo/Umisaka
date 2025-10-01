@@ -240,10 +240,9 @@ const ExtendedTheme: Theme = {
       frontmatter, route
     },
       // Whether to activate the comment area on all pages.
-      // The default is true, which means enabled, this parameter can be ignored;
-      // If it is false, it means it is not enabled.
+      // Set to false to disable comments by default.
       // You can use `comment: true` preface to enable it separately on the page.
-      true
+      false
     );
   }
 }
