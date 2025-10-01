@@ -3,7 +3,7 @@ import DefaultTheme from 'vitepress/theme'
 import giscusTalk from 'vitepress-plugin-comment-with-giscus';
 import { useData, useRoute } from 'vitepress';
 import { toRefs } from "vue";
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue'
 
 
 
@@ -42,8 +42,10 @@ import DocFooter from './components/DocFooter.vue'
 import HomePage from './components/HomePage.vue'
 import Share from './components/Share.vue'
 import TocList from './components/TocList.vue'
-import VideoBackground from './components/VideoBackground.vue'
-import MusicPlayer from './components/MusicPlayer.vue'
+
+// Lazy load heavy components for better performance
+const VideoBackground = defineAsyncComponent(() => import('./components/VideoBackground.vue'))
+const MusicPlayer = defineAsyncComponent(() => import('./components/MusicPlayer.vue'))
 
 import '@nolebase/vitepress-plugin-enhanced-readabilities/client/style.css'
 import '@nolebase/vitepress-plugin-highlight-targeted-heading/client/style.css'
