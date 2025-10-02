@@ -38,7 +38,7 @@
         @loadeddata="onVideoLoaded"
         @click="handleVideoClick"
       >
-        <source src="/wallpaper.mp4" type="video/mp4">
+        <source src="/background.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
       <div class="overlay"></div>
