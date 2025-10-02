@@ -16,7 +16,7 @@
         @loadeddata="onVideoLoaded"
         @click="handleVideoClick"
       >
-        <source src="/background.mp4" type="video/mp4">
+        <source src="/defalt.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
       <div class="overlay"></div>
@@ -79,9 +79,16 @@ const showDarkVideo = computed(() => {
   return route.path === '/' && isDark.value
 })
 
-// 监听路由变化（简单监听）
+// 监听路由变化
 watch(() => route.path, () => {
   // 仅在路由变化时触发，确保首页正确显示视频
+})
+
+// 监听主题变化
+watch(isDark, (newIsDark) => {
+  // 当主题变化时，重新计算视频显示状态
+  // 这会触发 computed 属性的重新计算，确保视频正确切换
+  console.log('Theme changed to:', newIsDark ? 'dark' : 'light')
 })
 
 const onVideoLoaded = () => {

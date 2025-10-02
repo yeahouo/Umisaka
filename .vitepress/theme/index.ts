@@ -162,16 +162,10 @@ const ExtendedTheme: Theme = {
     const { frontmatter, isDark } = toRefs(useData());
     const route = useRoute();
 
-    // 主题初始化，强制日间模式并阻止浏览器自动切换
+    // 主题初始化，默认日间模式但允许用户切换
     const initializeTheme = () => {
       if (typeof document !== 'undefined') {
         const html = document.documentElement;
-
-        // 强制移除暗色模式类
-        html.classList.remove('dark');
-
-        // 强制设置 light 类，确保日间模式
-        html.classList.add('light');
 
         // 移除可能存在的媒体查询监听器，阻止浏览器自动切换
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -179,37 +173,11 @@ const ExtendedTheme: Theme = {
           // 移除现有的监听器（如果存在）
           mediaQuery.removeEventListener('change', () => {});
         }
-
-        // 覆盖 CSS 变量，确保日间模式样式
-        html.style.setProperty('color-scheme', 'light');
-        html.style.setProperty('forced-color-adjust', 'none');
       }
     };
 
     // 初始化主题
     initializeTheme();
-
-    // 动态更新giscus主题的函数
-    const updateGiscusTheme = (theme: 'light' | 'dark') => {
-      if (typeof window !== 'undefined') {
-        const giscusFrame = document.querySelector<HTMLIFrameElement>('.giscus-frame');
-        if (giscusFrame && giscusFrame.contentWindow) {
-          giscusFrame.contentWindow.postMessage({
-            giscus: {
-              setConfig: {
-                theme: theme === 'dark' ? 'transparent_dark' : 'light'
-              }
-            }
-          }, 'https://giscus.app');
-        }
-      }
-    };
-
-    // 监听主题变化，动态更新giscus主题
-    watch(isDark, (newIsDark) => {
-      const newTheme = newIsDark ? 'dark' : 'light';
-      updateGiscusTheme(newTheme);
-    });
 
     // 移除系统主题监听，避免浏览器自动切换干扰
     // appearance: 'light' 配置会阻止浏览器自动切换
@@ -235,20 +203,7 @@ const ExtendedTheme: Theme = {
       homePageShowComment: false, // Whether to display the comment area on the homepage, the default is false
       lightTheme: 'light', // default: `light`
       darkTheme: 'transparent_dark', // default: `transparent_dark`
-      // 添加主题变化回调
-      onThemeChange: (theme: 'light' | 'dark' | 'dark_dimmed' | 'transparent_dark' | 'preferred_color_scheme') => {
-        // 当giscus内部主题变化时，同步到页面主题
-        if (typeof document !== 'undefined') {
-          const html = document.documentElement;
-          if (theme === 'dark' || theme === 'transparent_dark' || theme === 'dark_dimmed') {
-            html.classList.add('dark');
-            html.classList.remove('light');
-          } else {
-            html.classList.add('light');
-            html.classList.remove('dark');
-          }
-        }
-      }
+      // ...
     }, {
       frontmatter, route
     },

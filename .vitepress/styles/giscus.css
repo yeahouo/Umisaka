@@ -182,25 +182,3 @@ html.dark .vp-doc .comment-section-divider::after {
   background: var(--vp-c-bg);
   color: var(--vp-c-text-2);
 }
-
-/* 确保giscus组件在动态加载时正确应用主题 */
-.giscus-container {
-  transition: all 0.3s ease;
-}
-
-/* 当giscus正在加载时显示加载状态 */
-.giscus-loading-indicator {
-  text-align: center;
-  padding: 20px;
-  color: var(--vp-c-text-2);
-  font-family: var(--vp-font-family-base);
-}
-
-/* 确保giscus iframe在主题切换时正确更新 */
-.giscus-frame {
-  transition: opacity 0.3s ease;
-}
-
-.giscus-frame.updating {
-  opacity: 0.6;
-}
